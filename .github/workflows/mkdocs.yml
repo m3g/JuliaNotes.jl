@@ -1,5 +1,4 @@
 name: Documentation
-
 on:
   push:
     branches:
@@ -12,24 +11,26 @@ on:
   pull_request:
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-#    if: "!contains(github.event.head_commit.message, 'skip ci')"
-    strategy:
-      matrix:
-        julia-version: [1.5]
-        julia-arch: [x86]
-        os: [ubuntu-latest]
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@latest
+      - uses: julia-actions/setup-julia@v1
         with:
-          version: ${{ matrix.julia-version }}
-      - name: Install dependencies
-        run: julia --project=docs/ -e 'using Pkg;
-              Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
-      - name: Build and deploy
+          version: '1'
+      - run: |
+          julia --project=docs -e '
+            using Pkg
+            Pkg.develop(PackageSpec(path=pwd()))
+            Pkg.instantiate()'
+      - run: |
+          julia --project=docs -e '
+            using Documenter: DocMeta, doctest
+            using <<&PKG>>
+            DocMeta.setdocmeta!(<<&PKG>>, :DocTestSetup, :(using <<&PKG>>); recursive=true)
+            doctest(<<&PKG>>)'
+      - run: julia --project=docs docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-        run: julia --project=docs --color=yes docs/make.jl

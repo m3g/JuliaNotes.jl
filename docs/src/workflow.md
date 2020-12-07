@@ -23,7 +23,7 @@ where the `analyze.jl` and `report.jl` files include both the functions and the 
 
 When things get more complicated, you probably want to use `Revise` (or even before things get complicated). With `Revise` you can include your script once, and the changes will be tracked automatically. In that case, the call to the functions should be done at the REPL (not included in the scripts). Something like:
 
-```
+```julia
 using Revise
 include("set_data.jl")
 includet("analyze.jl") # note the "t", for track
@@ -39,9 +39,12 @@ result = analyze(data)
 report(result)
 ```
 
-Some people just use `Revise` by default. And `Revise` goes well with modules, in which case, if you had defined a module `MyModule` in a file `MyModule.jl`, with the functions of `analyze.jl` and `report.jl`, such as
+Some people just use `Revise` by default. And `Revise` goes well with
+modules, in which case, if you had defined a module `MyModule` in a file
+`MyModule.jl`, with the functions of `analyze.jl` and `report.jl`, such
+as
 
-```
+```julia
 module MyModule
   include("analyze.jl")
   include("report.jl")
@@ -49,20 +52,24 @@ module MyModule
 end
 ```
 
-loading it with
+Load it with
 
-```
+```julia
 using Revise
 using MyModule # if you are in the folder where "MyModule.jl" is*
 ```
 
-you will be able to modify the functions inside those files and they will be always be automatically updated at every new call in the REPL. 
+You will be able to modify the functions inside those files and they
+will be always be automatically updated at every new call in the REPL. 
 
-These options do not work if you redefine a data structure. Then you have to restart over. I usually keep also a script which just runs the above commands to restart the developing section when that is needed, starting julia with `julia -i devel.jl`.
+These options do not work if you redefine a data structure. Then you
+have to restart over. I usually keep also a script which just runs the
+above commands to restart the developing section when that is needed,
+starting julia with `julia -i devel.jl`.
 
-*If you want to load the module from other folder, you need to add that folder to the `LOAD_PATH`, with:
+\*If you want to load the module from other folder, you need to add that folder to the `LOAD_PATH`, with:
 
-```
+```julia
  push!(LOAD_PATH,"/path/to/MyModule")
 ```
 

@@ -1,6 +1,8 @@
 
 # How to deploy the documentation of a project
 
+The following workflow works for packages registered in the Julia general registry.
+
 ## Create the `TagBot.yml` file
 
 ```
@@ -10,14 +12,14 @@ and add the content provided here: [TagBot.yml example](https://github.com/Julia
 
 ## Use `DocumenterTools` to generate the keys
 
-```
+```julia
 import DocumenterTools
 DocumenterTools.genkeys()
 ```
 
 which will output something like:
 
-```
+```julia-repl
 julia> DocumenterTools.genkeys()
 [ Info: add the public key below to https://github.com/$USER/$REPO/settings/keys with read/write access:
 

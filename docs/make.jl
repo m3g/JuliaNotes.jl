@@ -10,6 +10,10 @@ makedocs(
         "Home" => "index.md",
         "Development workflow" => "workflow.md",
         "Publish Docs" => "publish_docs.md",
+        "Tracking allocations" => "memory.md",
+        "Immutable variables" => "immutable.md",
+        "Assignment and mutation" => "assignment.md",
+        "Type instability" => "instability.md",
     ]
 )
 deploydocs(
