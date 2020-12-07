@@ -1,15 +1,6 @@
 
 # How to deploy the documentation of a project
 
-The following workflow works for packages registered in the Julia general registry.
-
-## Create the `TagBot.yml` file
-
-```
-/home/user/.julia/dev/Project/.github/workflows/TagBot.yml
-```
-and add the content provided here: [TagBot.yml example](https://github.com/JuliaRegistries/TagBot/blob/master/README.md)
-
 ## Use `DocumenterTools` to generate the keys
 
 ```julia
@@ -43,6 +34,44 @@ and the second key has to be copied to:
 `Settings -> Secrets -> New repository secret` 
 
 with the name `DOCUMENTER_KEY`.
+
+## For a package not registered
+
+### Add the GithubActions workflow file
+
+Create, in your project, a file 
+```
+/home/user/.julia/dev/Project/.github/workflows/CI.yml
+```
+with a content similar to [THIS](https://github.com/m3g/JuliaCookBook.jl/blob/main/.github/workflows/ci.yml) one.
+
+Note that you have to change some lines that contain the name of the
+package name (`JuliaCookbook` - two substitutions).
+
+### Create a release
+
+Go to the github page. Go to `Releases` $\rightarrow$ `Draft a new
+Release`. Create a new tag for the new version (for example, `v0.2.0`)
+or a tag only for deploying the documentation (for example,
+`v0.1.0+doc1`). That will trigger the execution of the CI run and,
+hopefully, build the docs and the `gh-branch` that contain the docs
+automatically. 
+
+The pages will be hosted at, for example:
+
+[https://m3g.github.io/JuliaCookBook.jl/stable/](https://m3g.github.io/JuliaCookBook.jl/stable/)
+
+## For a registered package
+
+In this case, you might want `TagBot` to tag and release automatically
+the documentation of new versions:
+
+### Create the `TagBot.yml` file
+
+```
+/home/user/.julia/dev/Project/.github/workflows/TagBot.yml
+```
+and add the content provided here: [TagBot.yml example](https://github.com/JuliaRegistries/TagBot/blob/master/README.md)
 
 ## Deployment of the docs of a previous version
 
