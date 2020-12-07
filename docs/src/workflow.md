@@ -2,7 +2,7 @@
 
 Variables can be associated to different values any time:
 
-```
+```julia
 data = [ 1, 2, 3 ]
 f(data)
 data = [ 2, 3, 4 ]
@@ -11,7 +11,7 @@ f(data)
 
 Assuming that the data is constant, you could very directly just load a script repeatedly with the analysis and plotting/report functions, as you fiddle with the analysis functions, something as:
 
-```
+```julia
 include("set_data.jl")
 include("analyze.jl")
 include("report.jl")

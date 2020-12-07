@@ -8,7 +8,7 @@ makedocs(
     sitename="JuliaCookBook.jl",
     pages = [
         "Home" => "index.md",
-        "Workflow" => "workflow.md",
+        "Development workflow" => "workflow.md",
         "Publish Docs" => "publish_docs.md",
     ]
 )

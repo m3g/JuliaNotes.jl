@@ -1,14 +1,14 @@
 
-# How to deploy the documentation of a project using TagBot and Documenter
+# How to deploy the documentation of a project
 
-**1. Create a file:** 
+## Create the `TagBot.yml` file
 
 ```
 /home/user/.julia/dev/Project/.github/workflows/TagBot.yml
 ```
 and add the content provided here: [TagBot.yml example](https://github.com/JuliaRegistries/TagBot/blob/master/README.md)
 
-**2. Use `DocumenterTools` to generate the keys, with**
+## Use `DocumenterTools` to generate the keys
 
 ```
 import DocumenterTools
@@ -28,7 +28,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDIIDDRX8DyLG... CCKQPTNei1Ng8b5d+a1ldnVSkg
 LS0tLS1CRUdJTiBPUEVOU1NIIFBSSV... MGtyNng2VWR6WTFxckg1bkUyVGU2ajU3TUdveXpZL1EzTApoNGlqbE5NSWJTOFA2K2JNUkYxVFVCUzdQbC9mZDlTZWJKYTlKdWpMamtnNWRiblJFSkpESmpDTzNzSjZ4d0VCUmV2WmJSCnZtV2lkWkVnQnlPUFVsQUFBQUNrUnZZM1Z0Wlc1MFpYST0KLS0tLS1FTkQgT1BFTlNTSCBQUklWQVRFIEtFWS0tLS0tCg==
 ```
 
-**3. Add the keys to the github repository:**
+### Add the keys to the github repository
 
 *Warning:* <s>Be careful to not introduce newlines or any other strange character when copying and pasting the keys. In particular, the secret must be all in one line. That was part of the problem.</s> fixed now by Chistopher
 
@@ -42,7 +42,7 @@ and the second key has to be copied to:
 
 with the name `DOCUMENTER_KEY`.
 
-**4. If something went wrong with the deployment of the docs of a previous version:**
+## Deployment of the docs of a previous version
 
 I went to the registered commit, which always have the following information, for example:
 
