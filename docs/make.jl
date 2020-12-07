@@ -17,7 +17,7 @@ makedocs(
     ]
 )
 deploydocs(
-    repo = "github.com/m3g/JuliaCookBook..jl.git",
+    repo = "github.com/m3g/JuliaCookBook.jl.git",
     target = "build",
     branch = "gh-pages",
     versions = ["stable" => "v^", "v#.#" ],
