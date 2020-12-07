@@ -9,6 +9,7 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Development workflow" => "workflow.md",
+        "Modules and Revise" => "modules.md",
         "Publish Docs" => "publish_docs.md",
         "Tracking allocations" => "memory.md",
         "Immutable variables" => "immutable.md",
