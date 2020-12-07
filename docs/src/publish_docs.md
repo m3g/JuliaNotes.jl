@@ -61,6 +61,13 @@ The pages will be hosted at, for example:
 
 [https://m3g.github.io/JuliaCookBook.jl/stable/](https://m3g.github.io/JuliaCookBook.jl/stable/)
 
+You can also update the docs just by uploading a new tag, with:
+
+```
+git tag -a v0.1.0+doc2 -m "v0.1.0"
+git push --tag
+```
+
 ## For a registered package
 
 In this case, you might want `TagBot` to tag and release automatically

@@ -10,11 +10,13 @@ makedocs(
         "Home" => "index.md",
         "Development workflow" => "workflow.md",
         "Modules and Revise" => "modules.md",
-        "Publish Docs" => "publish_docs.md",
-        "Tracking allocations" => "memory.md",
-        "Immutable variables" => "immutable.md",
+        "Benchmark" => "benchmark.md",
         "Assignment and mutation" => "assignment.md",
         "Type instability" => "instability.md",
+        "Tracking allocations" => "memory.md",
+        "Immutable variables" => "immutable.md",
+        "ERROR: No method..." => "nomethod.md",
+        "Publish Docs" => "publish_docs.md",
     ]
 )
 deploydocs(
