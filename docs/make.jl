@@ -1,14 +1,15 @@
 import Pkg
 Pkg.add("Documenter")
 using Documenter
-using JuliaCookBook
+#using JuliaCookBook
 push!(LOAD_PATH,"../src/")
 makedocs(
-    modules=[JuliaCookBook],
+#    modules=[JuliaCookBook],
     sitename="JuliaCookBook.jl",
     pages = [
         "Home" => "index.md",
         "Workflow" => "workflow.md",
+        "Publish Docs" => "publish_docs.md",
     ]
 )
 deploydocs(

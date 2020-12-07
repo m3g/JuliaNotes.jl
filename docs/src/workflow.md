@@ -68,5 +68,5 @@ These options do not work if you redefine a data structure. Then you have to res
 
 
 Further discussion on this topic: 
-[https://discourse.julialang.org/t/julia-repl-flow-coming-from-matlab/50499/1](Julia REPL flow coming from Matlab)
+[Julia REPL flow coming from Matlab](https://discourse.julialang.org/t/julia-repl-flow-coming-from-matlab/50499/1)
 
