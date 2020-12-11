@@ -13,6 +13,7 @@ makedocs(
         "Benchmark" => "benchmark.md",
         "Assignment and mutation" => "assignment.md",
         "Type instability" => "instability.md",
+        "Closures" => "closures.md",
         "Union splitting" => "splitting.md",
         "Tracking allocations" => "memory.md",
         "Immutable variables" => "immutable.md",
