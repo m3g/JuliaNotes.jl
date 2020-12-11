@@ -3,7 +3,7 @@
 Closures are an important part of the Julia syntax, and permeate many of
 the codes in Julia. They will appear most commonly with the syntax of anonymous functions.
 
-For example, on simple example of the use of closures is the `findfirst`
+For example, a simple example of the use of closures is the `findfirst`
 function, which returns the element of an array which first matches a
 condition:
 
