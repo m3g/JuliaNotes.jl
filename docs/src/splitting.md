@@ -3,6 +3,7 @@
 To be explained.
 
 ```julia
+using BenchmarkTools
 abstract type Material end
 
 struct Material1 <: Material
