@@ -74,9 +74,6 @@ julia> g = 2
 2
 ```
 
-We could, also, use `g = x -> f(x,a,b,c)`, but this option will be less
-preferred as it is just a wacky way to write `g(x) = f(x,a,b,c)`.  
-
 Anonymous functions for functions with multiple parameters can also be
 defined, with, for example,
 
@@ -150,6 +147,9 @@ julia> solver(x -> f(x,a,b,c),x)
 38.0
 
 ```
+
+We could, also, use `g = x -> f(x,a,b,c)`, but this option will be less
+preferred as it is just a wacky way to write `g(x) = f(x,a,b,c)`.  
 
 ## Scope of variables
 
