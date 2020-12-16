@@ -68,14 +68,14 @@ println(&quot; Single type: &quot;)
 print(&quot;naive:&quot;);@btime hits_naive($hitpoints_single)
 print(&quot;split:&quot;);@btime hits_splitting($hitpoints_single)
 print(&quot;funct:&quot;);@btime hits_functors($hitpoints_single)
-</code></pre><p>Results:</p><pre><code class="language-julia-repl">julia&gt; include(&quot;./splitting.jl&quot;)
- Mixed types: 
-naive:  1.417 μs (0 allocations: 0 bytes)
-split:  3.631 μs (0 allocations: 0 bytes)
-funct:  1.490 μs (0 allocations: 0 bytes)
- Same types: 
-naive:  1.073 μs (0 allocations: 0 bytes)
-split:  965.050 ns (0 allocations: 0 bytes)
-funct:  1.018 μs (0 allocations: 0 bytes)
-497.63742655863535
-</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../closures/">« Closures</a><a class="docs-footer-nextpage" href="../memory/">Tracking allocations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 16 December 2020 22:21">Wednesday 16 December 2020</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</code></pre><p>Results:</p><pre><code class="language-julia-repl">julia&gt; include(&quot;./splitting2.jl&quot;)
+ Mixed types:
+naive:  36.732 μs (2000 allocations: 31.25 KiB)
+split:  5.519 μs (0 allocations: 0 bytes)
+funct:  1.228 μs (0 allocations: 0 bytes)
+ Single type:
+naive:  3.792 μs (0 allocations: 0 bytes)
+split:  3.818 μs (0 allocations: 0 bytes)
+funct:  991.750 ns (0 allocations: 0 bytes)
+120.4941832560873
+</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../closures/">« Closures</a><a class="docs-footer-nextpage" href="../memory/">Tracking allocations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 16 December 2020 22:22">Wednesday 16 December 2020</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
