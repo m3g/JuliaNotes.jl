@@ -20,9 +20,11 @@ struct HitPoint{T <: Material}
   m :: T
 end
 
-hit(p::HitPoint) = p.r*p.p*p.m.m
+#hit(p::HitPoint) = p.r*p.p*p.m.m
 
+# the key is to create specialized methods for every subtype:
 for type in subtypes(Material)
+  eval(:(hit(p::HitPoint{$type}) = p.r*p.p*p.m.m))
   eval(:((p::HitPoint{$type})() = p.r*p.p*p.m.m))
 end
 
@@ -36,11 +38,11 @@ end
 
 function hits_splitting(hitpoints)
   s = 0.
-  for p in hitpoints 
+  for p in hitpoints
     if p isa HitPoint{Material1}
-      s += hit(p)
+      s += hit(p::HitPoint{Material1})
     elseif p isa HitPoint{Material2}
-      s += hit(p)
+      s += hit(p::HitPoint{Material2})
     end
   end
   s
@@ -80,14 +82,15 @@ Results:
 ```julia-repl
 julia> include("./splitting2.jl")
  Mixed types:
-naive:  36.732 μs (2000 allocations: 31.25 KiB)
-split:  5.519 μs (0 allocations: 0 bytes)
-funct:  1.228 μs (0 allocations: 0 bytes)
+naive:  1.510 μs (0 allocations: 0 bytes)
+split:  2.975 μs (0 allocations: 0 bytes)
+funct:  1.266 μs (0 allocations: 0 bytes)
  Single type:
-naive:  3.792 μs (0 allocations: 0 bytes)
-split:  3.818 μs (0 allocations: 0 bytes)
-funct:  991.750 ns (0 allocations: 0 bytes)
-120.4941832560873
+naive:  992.167 ns (0 allocations: 0 bytes)
+split:  991.833 ns (0 allocations: 0 bytes)
+funct:  991.833 ns (0 allocations: 0 bytes)
+117.02622654899025
 
 ```
+
 
