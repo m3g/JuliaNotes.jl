@@ -78,15 +78,16 @@ print("funct:");@btime hits_functors($hitpoints_single)
 Results:
 
 ```julia-repl
-julia> include("./splitting.jl")
- Mixed types: 
-naive:  1.417 μs (0 allocations: 0 bytes)
-split:  3.631 μs (0 allocations: 0 bytes)
-funct:  1.490 μs (0 allocations: 0 bytes)
- Same types: 
-naive:  1.073 μs (0 allocations: 0 bytes)
-split:  965.050 ns (0 allocations: 0 bytes)
-funct:  1.018 μs (0 allocations: 0 bytes)
-497.63742655863535
+julia> include("./splitting2.jl")
+ Mixed types:
+naive:  36.732 μs (2000 allocations: 31.25 KiB)
+split:  5.519 μs (0 allocations: 0 bytes)
+funct:  1.228 μs (0 allocations: 0 bytes)
+ Single type:
+naive:  3.792 μs (0 allocations: 0 bytes)
+split:  3.818 μs (0 allocations: 0 bytes)
+funct:  991.750 ns (0 allocations: 0 bytes)
+120.4941832560873
 
 ```
+
