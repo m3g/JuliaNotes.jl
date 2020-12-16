@@ -57,7 +57,7 @@ end
 using BenchmarkTools
 
 n = 1000
-hitpoints = [ isodd(i) ? HitPoint(rand(),rand(),Material1(rand())) : 
+hitpoints = [ rand(Bool) ? HitPoint(rand(),rand(),Material1(rand())) : 
               HitPoint(rand(),rand(),Material2(rand())) for i in 1:n ]
 
 println(" Mixed types: ")
