@@ -43,10 +43,10 @@ Create, in your project, a file
 ```
 /home/user/.julia/dev/Project/.github/workflows/CI.yml
 ```
-with a content similar to [THIS](https://github.com/m3g/JuliaCookBook.jl/blob/main/.github/workflows/ci.yml) one.
+with a content similar to [THIS](https://github.com/m3g/JuliaNotes.jl/blob/main/.github/workflows/ci.yml) one.
 
 Note that you have to change some lines that contain the name of the
-package name (`JuliaCookbook` - two substitutions).
+package name (`JuliaNotes` - two substitutions).
 
 ### Create a release
 
@@ -59,7 +59,7 @@ automatically.
 
 The pages will be hosted at, for example:
 
-[https://m3g.github.io/JuliaCookBook.jl/stable/](https://m3g.github.io/JuliaCookBook.jl/stable/)
+[https://m3g.github.io/JuliaNotes.jl/stable/](https://m3g.github.io/JuliaNotes.jl/stable/)
 
 You can also update the docs just by uploading a new tag, with:
 

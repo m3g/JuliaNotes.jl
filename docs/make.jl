@@ -1,11 +1,11 @@
 import Pkg
 Pkg.add("Documenter")
 using Documenter
-using JuliaCookBook
+using JuliaNotes
 push!(LOAD_PATH,"../src/")
 makedocs(
-    modules=[JuliaCookBook],
-    sitename="JuliaCookBook.jl",
+    modules=[JuliaNotes],
+    sitename="JuliaNotes.jl",
     pages = [
         "Home" => "index.md",
         "Development workflow" => "workflow.md",
@@ -22,7 +22,7 @@ makedocs(
     ]
 )
 deploydocs(
-    repo = "github.com/m3g/JuliaCookBook.jl.git",
+    repo = "github.com/m3g/JuliaNotes.jl.git",
     target = "build",
     branch = "gh-pages",
     versions = ["stable" => "v^", "v#.#" ],

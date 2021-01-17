@@ -1,4 +1,4 @@
-module JuliaCookBook
+module JuliaNotes
 
 # Write your package code here.
 
