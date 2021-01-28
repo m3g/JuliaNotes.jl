@@ -1,12 +1,18 @@
 # Scope behavior of loops
 
 You will find long and exhaustive threads discussing how Julia ended up
-with the current scopping rules and behavior, 
+with the current scoping rules and behavior, 
 and why it is a good compromise between the pros and
 cons of many other alternatives. Just search for "scoping rules" in the
 Discourse forum.
 
-My perhaps didactic explanation on the choices made is:
+My perhaps didactic explanation on the choices made is below. I
+understand that scopes, at least in this context, can be understood as
+blocks of code that can be compiled and executed independently. One
+wants the compiler to have as much information as possible concerning
+the variables of that code block, such that it can specialize the code
+to the types of variables inside the block. With that image in mind, we
+have: 
 
 - Ideally one would like that a loop like 
 
@@ -19,15 +25,21 @@ My perhaps didactic explanation on the choices made is:
   
   worked always and modified `s` as intended. Yet, in Julia, for
   performance reasons, the `for ` loop introduces a new scope, where the
-  variables have to be of constant types. Therefore, that behavior cannot
-  be simply accepted without notice. 
+  variables may be inferred by the compiler to remain with constant types
+  through the loop execution. If the variable is global, that means that
+  its type can be changed from outside the loop. 
+  Therefore, writing a loop that makes reference to a global variable
+  cannot be simply accepted without notice. 
 
 - There is no problem in writing such a loop inside a function, because
-  there the types of the variables are constant and thus the loop
+  there the types of the variables are constant except if modified by
+  some operation inside the function itself. In that case the loop
   performs well. No problems there.
 
 - That loop written in the global scope will be problematic (slow)
-  because `s` might not have a constant type. Thus, one should warn the
+  because `s` might not have a constant type. That is, since the type of 
+  `s` can change outside the loop, the compiler cannot specialize the
+  operations of the loop to the type of `s`. Thus, one should warn the
   user that that is not a good programming style. Previously, because of
   that, it was required that the use of the global variable was
   explicit:
