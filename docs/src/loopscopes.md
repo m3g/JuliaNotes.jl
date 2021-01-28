@@ -17,7 +17,7 @@ have:
 - Ideally one would like that a loop like 
 
   ```julia
-  s = 0.
+  s = 0
   for i in 1:3
     s = s + i
   end
@@ -44,7 +44,7 @@ have:
   that, it was required that the use of the global variable was
   explicit:
   ```julia-repl
-  julia> s = 0.
+  julia> s = 0
          for i in 1:3
            global s
            s = s + i
