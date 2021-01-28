@@ -26,7 +26,7 @@ have:
   worked always and modified `s` as intended. Yet, in Julia, for
   performance reasons, the `for ` loop introduces a new scope, where the
   variables may be inferred by the compiler to remain with constant types
-  through the loop execution. If the variable is global, that means that
+  during the loop execution. If the variable `s` is global, that means that
   its type can be changed from outside the loop. 
   Therefore, writing a loop that makes reference to a global variable
   cannot be simply accepted without notice. 
@@ -81,5 +81,4 @@ have:
   The warning is clear and is saying:
   don't  do that, unless you are really really aware of its
   consequences, and in that case declare `s` as global explicitly.
-
 
