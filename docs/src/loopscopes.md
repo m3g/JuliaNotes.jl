@@ -1,7 +1,8 @@
 # Scope behavior of loops
 
 You will find long and exhaustive threads discussing how Julia ended up
-with that behavior, and why it is a good compromise between the pros and
+with the current scopping rules and behavior, 
+and why it is a good compromise between the pros and
 cons of many other alternatives. Just search for "scoping rules" in the
 Discourse forum.
 
