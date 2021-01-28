@@ -33,8 +33,8 @@ have:
 
 - There is no problem in writing such a loop inside a function, because
   there the types of the variables are constant except if modified by
-  some operation inside the function itself. In that case the loop
-  performs well. No problems there.
+  some operation inside the function itself. If they are not, the compiler
+  can realize that and the loop is fast. No problems there.
 
 - That loop written in the global scope will be problematic (slow)
   because `s` might not have a constant type. That is, since the type of 
