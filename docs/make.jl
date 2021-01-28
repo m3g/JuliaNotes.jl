@@ -10,6 +10,7 @@ makedocs(
         "Home" => "index.md",
         "Development workflow" => "workflow.md",
         "Modules and Revise" => "modules.md",
+        "Scope of loops" => "loopscopes.md",
         "Benchmark" => "benchmark.md",
         "Assignment and mutation" => "assignment.md",
         "Type instability" => "instability.md",

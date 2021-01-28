@@ -1,0 +1,72 @@
+# Scope behavior of loops
+
+You will find long and exhaustive threads discussing how Julia ended up
+with that behavior, and why it is a good compromise between the pros and
+cons of many other alternatives. Just search for "scoping rules" in the
+Discourse forum.
+
+My perhaps didactic explanation on the choices made is:
+
+- Ideally one would like that a loop like 
+
+  ```julia
+  s = 0.
+  for i in 1:3
+    s = s + i
+  end
+  ```
+  
+  worked always and modified `s` as intended. Yet, in Julia, for
+  performance reasons, the `for ` loop introduces a new scope, where the
+  variables have to be of constant types. Therefore, that behavior cannot
+  be simply accepted without notice. 
+
+- There is no problem in writing such a loop inside a function, because
+  there the types of the variables are constant and thus the loop
+  performs well. No problems there.
+
+- That loop written in the global scope will be problematic (slow)
+  because `s` might not have a constant type. Thus, one should warn the
+  user that that is not a good programming style. Previously, because of
+  that, it was required that the use of the global variable was
+  explicit:
+  ```julia-repl
+  julia> s = 0.
+         for i in 1:3
+           global s
+           s = s + i
+         end
+  ```
+  However, this was inconvenient, because one was not able to copy and
+  paste a code from a function to the REPL. Thus, since Julia 1.5, it
+  was decided that at the REPL the code without the explicit `global s` 
+  declaration will work. The `s` variable is still global and the loop
+  will not be efficient, but this in this context it is acceptable 
+  because nobody writes critical code directly to the REPL.
+
+- That leaves the possibility of writing such loops inside files,
+  outside functions. For example, defining a file `myloop.jl` with
+  that loop coded directly inside it, and executing the code in
+  the global scope with: 
+  ```julia-repl
+  julia> include("./myloop.jl")
+  ```
+  A programmer can be tempted to write critical code
+  inside a file in such a way and, while that is not impossible, it must
+  be discouraged. Thus, the choice was to raise a Warning and an Error associated with
+  the possible scoping problems of that loop if it is written as if it was
+  in the global scope of that file: 
+  ```julia-repl
+  julia> include("./myloop.jl")
+  ┌ Warning: Assignment to `s` in soft scope is ambiguous because a global
+  variable by the same name exists: `s` will be treated as a new local.
+  Disambiguate by using `local s` to suppress this warning or `global s`
+  to assign to the existing global variable.
+  └ @ ~/Drive/Work/JuliaPlay/myloop.jl:3
+  ERROR: LoadError: UndefVarError: s not defined
+  ```
+  The warning is clear and is saying:
+  don't  do that, unless you are really really aware of its
+  consequences, and in that case declare `s` as global explicitly.
+
+
