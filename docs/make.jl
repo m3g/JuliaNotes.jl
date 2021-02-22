@@ -19,6 +19,7 @@ makedocs(
         "Tracking allocations" => "memory.md",
         "Immutable variables" => "immutable.md",
         "ERROR: No method..." => "nomethod.md",
+        "Vector{Int} <: Vector{Real} is false???" => "typevariance.md",
         "Publish Docs" => "publish_docs.md",
     ]
 )
