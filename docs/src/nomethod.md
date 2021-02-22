@@ -1,10 +1,7 @@
 
 # ERROR: MethodError: no method matching....
 
-This is a common error message, which is related to one of the most
-fundamental characteristics of the Julia language: multiple dispatch.  
-Multiple dispatch is the specialization of a function to every one of
-its arguments.  
+This is a common error message, which is related to one of the most fundamental characteristics of the Julia language: multiple dispatch.  Multiple dispatch is the specialization of a function to every one of its arguments.  
 
 For example, if we define the following function:
 
@@ -14,18 +11,9 @@ f (generic function with 1 method)
 
 ```
 
-We have a function that can receive different types of variables (such
-as scalar integers or floats, or vectors, etc.). This function will be
-specialized for each type of variables on input. The `@code_typed` macro
-displays what the codes becomes after the type-specialization of the
-variables. For example, with integers, we have:
+We have a function that can receive different types of variables (such as scalar integers or floats, or vectors, etc.). This function will be specialized for each type of variables on input. The `@code_typed` macro displays what the codes becomes after the type-specialization of the variables. For example, with integers, we have:
 
-Temos uma função que pode receber diferentes tipos de variáveis (como
-escalares inteiros ou reais, vetores, etc), e a função será
-especializada no momento da execução para cada tipo de variável. A
-*macro* `@code_typed` mostra a representação da função em um nível mais
-baixo, quando executada com diferentes argumentos. Com um número
-inteiro, temos:
+Temos uma função que pode receber diferentes tipos de variáveis (como escalares inteiros ou reais, vetores, etc), e a função será especializada no momento da execução para cada tipo de variável. A *macro* `@code_typed` mostra a representação da função em um nível mais baixo, quando executada com diferentes argumentos. Com um número inteiro, temos:
 
 ```julia-repl
 julia> @code_typed f(1,1)
@@ -37,12 +25,9 @@ CodeInfo(
 
 ```
 
-Note that the function calls `Base.mul_int` and `Base.add_int`, which
-are specialized functions to multiply and add integer numbers. 
+Note that the function calls `Base.mul_int` and `Base.add_int`, which are specialized functions to multiply and add integer numbers. 
 
-If we call the same function with real numbers, we have, first a
-conversion of the number `2` from integer to float, and then specialized
-functions are called to multiply and add these floating point numbers:
+If we call the same function with real numbers, we have, first a conversion of the number `2` from integer to float, and then specialized functions are called to multiply and add these floating point numbers:
 
 ```julia-repl
 julia> @code_typed f(1.0,1.0)
@@ -55,13 +40,9 @@ CodeInfo(
 
 ```
 
-Therefore, the code of `f(x,y)` was specialized, at execution time, to
-different types of variables, and will produce fast compiled versions of
-the code in each case. 
+Therefore, the code of `f(x,y)` was specialized, at execution time, to different types of variables, and will produce fast compiled versions of the code in each case. 
 
-We can define functions for which we restrict the types of variables
-accepted. For example, let us define a function that only accepts
-numbers, but not vectors:
+We can define functions for which we restrict the types of variables accepted. For example, let us define a function that only accepts numbers, but not vectors:
 
 ```julia-repl
 julia> g(x::Number,y::Number) = 2*x + y
@@ -88,8 +69,7 @@ julia> f(x,y)
 
 ```
 
-However, `g(x,y)` is called with vectors as arguments,
-we now have an error:    
+However, `g(x,y)` is called with vectors as arguments, we now have an error:    
 
 
 ```julia-repl
@@ -100,13 +80,9 @@ Stacktrace:
 
 ```
 
-The error is quite explicit: there is no definition of the function
-`g` which is intended to accept arrays as parameters.   
+The error is quite explicit: there is no definition of the function `g` which is intended to accept arrays as parameters.   
 
-Therefore, if you got one error of this type in your program, that means
-that some function is being call with the wrong arguments. That might
-mean the argument of the incorrect type, or the wrong number of
-arguments. For example:
+Therefore, if you got one error of this type in your program, that means that some function is being call with the wrong arguments. That might mean the argument of the incorrect type, or the wrong number of arguments. For example:
 
 ```julia-repl
 julia> f(x)
@@ -118,10 +94,7 @@ Stacktrace:
 
 ```
 
-Debug your code to find where this error occurs, and check each
-parameter being fed to the function. Compare it with the definitions of
-the methods of that function, if necessary. The methods of a function
-can be listed, for example, with:
+Debug your code to find where this error occurs, and check each parameter being fed to the function. Compare it with the definitions of the methods of that function, if necessary. The methods of a function can be listed, for example, with:
 
 ```julia-repl
 julia> methods(g)
@@ -130,12 +103,7 @@ julia> methods(g)
 
 ```
 
-Why, then, one would restrict the type of variable a function can
-receive? There are two reasons for that: 1) Make the code clearer to the
-user, by specifying the type of variable that a function is expected to
-receive and 2) Anticipate an error.  For example, the function `f` can
-receive two vectors because the sum of two vectors is well defined.
-However, the sum of a vector with a scalar is not. Therefore,
+Why, then, one would restrict the type of variable a function can receive? There are two reasons for that: 1) Make the code clearer to the user, by specifying the type of variable that a function is expected to receive and 2) Anticipate an error.  For example, the function `f` can receive two vectors because the sum of two vectors is well defined.  However, the sum of a vector with a scalar is not. Therefore,
 
 ```julia-repl
 julia> x = [1,1]; y = 2;
@@ -146,10 +114,7 @@ For element-wise addition, use broadcasting with dot syntax: array .+
 scalar
 
 ```
-We get a method error here because the sum of a scalar with an array is
-not defined. We could have anticipated that error in our function by
-accepting only numbers (as in our definition of `g`), only vectors, or,
-more interestingly, only elements of the same type:
+We get a method error here because the sum of a scalar with an array is not defined. We could have anticipated that error in our function by accepting only numbers (as in our definition of `g`), only vectors, or, more interestingly, only elements of the same type:
 
 ```julia-repl
 julia> h(x::T, y::T) where T = 2*x + y
@@ -177,14 +142,9 @@ ERROR: MethodError: no method matching h(::Array{Int64,1}, ::Int64)
 
 ```
 
-We only get an error if the two types are different, in which case the
-addition is not defined. And the error occurs not in the call to the
-`+` function, as with the function `f`, but in the call to `h`,
-anticipating the error and, perhaps, facilitating the debugging of the
-program. 
+We only get an error if the two types are different, in which case the addition is not defined. And the error occurs not in the call to the `+` function, as with the function `f`, but in the call to `h`, anticipating the error and, perhaps, facilitating the debugging of the program. 
 
-Alternativelly, we could have defined a new method to the function `g`,
-accepting only vectors:
+Alternativelly, we could have defined a new method to the function `g`, accepting only vectors:
 
 ```julia-repl
 julia> g(x::Vector, y::Vector) = 2*x + y
@@ -203,11 +163,7 @@ REPL[21]:1
 
 ```
 
-One of these methods only accepts scalars, the other only accepts
-arrays. The most specific method for the type of variable being provided
-to the function will be used. This can be seen, for example, with the
-function `f`. Currently, it has only one method without any type
-specification:  
+One of these methods only accepts scalars, the other only accepts arrays. The most specific method for the type of variable being provided to the function will be used. This can be seen, for example, with the function `f`. Currently, it has only one method without any type specification:  
 
 ```julia-repl
 julia> methods(f)
@@ -216,8 +172,7 @@ julia> methods(f)
 
 ```
 
-Of course the function `f` cannot receive strings. However, we can
-define a new method for `f` which does receive strings:  
+Of course the function `f` cannot receive strings. However, we can define a new method for `f` which does receive strings:  
 
 ```julia-repl
 julia> f(x::String, y::String) = "$x $x $y"
@@ -228,15 +183,9 @@ julia> f("abc","def")
 
 ```
 
-We defined a method for `f` which does more or less what one would
-expect from `2x + y` with strings, and this method is now invoked if `f`
-receives two strings as input, despite the other method being completely
-general. That is, the most specific method was invoked. 
+We defined a method for `f` which does more or less what one would expect from `2x + y` with strings, and this method is now invoked if `f` receives two strings as input, despite the other method being completely general. That is, the most specific method was invoked. 
 
-More interestingly, we can define a method for `f` which actually
-performs what one could expect from the syntax associated to the
-addition of a vector and a scalar (which, if meaning anything, probably
-should mean summing the scalar to every element of the vector):
+More interestingly, we can define a method for `f` which actually performs what one could expect from the syntax associated to the addition of a vector and a scalar (which, if meaning anything, probably should mean summing the scalar to every element of the vector):
 
 ```julia-repl
 julia> f(x::Vector, y::Number) = 2*x .+ y
@@ -252,10 +201,6 @@ julia> f(x,y)
 
 ```
 
-Note the `.` in the definition of the sum, which is the `broadcast`
-operator, which implies that the sum will be performed for every element
-of `x`. 
+Note the `.` in the definition of the sum, which is the `broadcast` operator, which implies that the sum will be performed for every element of `x`. 
 
-Of course, it is always recommended to define methods that perform
-conceptually the same thing, but with different types of variables, for
-the same function.  
+Of course, it is always recommended to define methods that perform conceptually the same thing, but with different types of variables, for the same function.  

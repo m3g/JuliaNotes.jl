@@ -15,9 +15,7 @@ That will print something if the code block allocated something.
 
 ## Using the Profiler
 
-To track allocations along the complete code, it is possible to use a
-profiler, although this generates so much information that it is
-somewhat confusing.
+To track allocations along the complete code, it is possible to use a profiler, although this generates so much information that it is somewhat confusing.
 
 For example, consider this is the code (file name here: test.jl):
 

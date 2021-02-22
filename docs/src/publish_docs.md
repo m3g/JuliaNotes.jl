@@ -50,12 +50,7 @@ package name (`JuliaNotes` - two substitutions).
 
 ### Create a release
 
-Go to the github page. Go to `Releases` $\rightarrow$ `Draft a new
-Release`. Create a new tag for the new version (for example, `v0.2.0`)
-or a tag only for deploying the documentation (for example,
-`v0.1.0+doc1`). That will trigger the execution of the CI run and,
-hopefully, build the docs and the `gh-branch` that contain the docs
-automatically. 
+Go to the github page. Go to `Releases` $\rightarrow$ `Draft a new Release`. Create a new tag for the new version (for example, `v0.2.0`) or a tag only for deploying the documentation (for example, `v0.1.0+doc1`). That will trigger the execution of the CI run and, hopefully, build the docs and the `gh-branch` that contain the docs automatically. 
 
 The pages will be hosted at, for example:
 
@@ -70,8 +65,7 @@ git push --tag
 
 ## For a registered package
 
-In this case, you might want `TagBot` to tag and release automatically
-the documentation of new versions:
+In this case, you might want `TagBot` to tag and release automatically the documentation of new versions:
 
 ### Create the `TagBot.yml` file
 

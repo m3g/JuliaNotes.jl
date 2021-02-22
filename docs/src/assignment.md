@@ -4,22 +4,11 @@ From: [Assignment and mutation](https://discourse.julialang.org/t/assignment-and
 
 The simplest version of this Stephan Karpinksy can come up with is this:
 
- - Assignment changes which object a name refers to: x = ex causes the
-   name x to refer to the value resulting from the evaluation of the
-   expression ex. Assignment never changes the values of any objects.
+ - Assignment changes which object a name refers to: x = ex causes the name x to refer to the value resulting from the evaluation of the expression ex. Assignment never changes the values of any objects.
 
- - Mutation changes the value of an object: x[i] = ex and x.f = ex both
-   mutate the object referred to by x changing a value at index or a
-   property with a name, respectively. Mutation never changes what objects
-   any names in any scope refer to.
+ - Mutation changes the value of an object: x[i] = ex and x.f = ex both mutate the object referred to by x changing a value at index or a property with a name, respectively. Mutation never changes what objects any names in any scope refer to.
 
-Perhaps the confusion comes from the fact that these all use the = in
-their syntax? They’re really totally unrelated. It’s also possible that
-people think of assignment as setting a named property on some implicit
-“scope object”. That’s probably a view that can be worked out
-coherently, in which case having a clear notion of what all the
-different “scope objects” are would be crucial but I’m not entirely sure
-if that’s a helpful way to think about the matter or not.
+Perhaps the confusion comes from the fact that these all use the = in their syntax? They’re really totally unrelated. It’s also possible that people think of assignment as setting a named property on some implicit “scope object”. That’s probably a view that can be worked out coherently, in which case having a clear notion of what all the different “scope objects” are would be crucial but I’m not entirely sure if that’s a helpful way to think about the matter or not.
 
 In
 [summary](https://discourse.julialang.org/t/julias-assignment-behavior-differs-from-fortran/50389/45?u=leandromartinez98):

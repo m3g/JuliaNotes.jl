@@ -1,11 +1,8 @@
 # Closures and anonymous functions
 
-Closures are an important part of the Julia syntax, and permeate many of
-the codes in Julia. They will appear most commonly with the syntax of anonymous functions.
+Closures are an important part of the Julia syntax, and permeate many of the codes in Julia. They will appear most commonly with the syntax of anonymous functions.
 
-For example, a simple example of the use of closures is the `findfirst`
-function, which returns the element of an array which first matches a
-condition:
+For example, a simple example of the use of closures is the `findfirst` function, which returns the element of an array which first matches a condition:
 
 ```julia-repl
 julia> x = [ 0, π/4, π/2, π ]
@@ -19,11 +16,7 @@ julia> findfirst( x -> sin(x) > 0.5, x )
 2
 ```
 
-The `x -> sin(x) > 0.5` is an anonymous function, which one can read as
-"given `x` return `sin(x) > 0.5`", which in this case can be `true` or
-`false`. That function, `x -> sin(x) > 0.5` is, therefore, a *callable
-object*, which returns different values for each given `x`, much as a
-any other function. These *callable objects* are named *closures*. 
+The `x -> sin(x) > 0.5` is an anonymous function, which one can read as "given `x` return `sin(x) > 0.5`", which in this case can be `true` or `false`. That function, `x -> sin(x) > 0.5` is, therefore, a *callable object*, which returns different values for each given `x`, much as a any other function. These *callable objects* are named *closures*. 
 
 ## Basic syntax
 
@@ -34,8 +27,7 @@ a = 5
 f(x,a) = a*x
 
 ```
-An anonymous function which, given `x`, returns the result of `f(x,a)`,
-is written as
+An anonymous function which, given `x`, returns the result of `f(x,a)`, is written as
 
 ```julia
 x -> f(x,a) 
@@ -46,14 +38,13 @@ The anonymous function can be bound to a variable,
 g = x -> f(x,a)
 ```
 
-and `g` will be a function that, given `x`, returns `f(x,a)`. This
-definition is similar to
+and `g` will be a function that, given `x`, returns `f(x,a)`. This definition is similar to
+
 ```julia
 g(x) = f(x,a)
 ```
 
-Except that in the latter case the label `g` is bound to the function
-in definitive:
+Except that in the latter case the label `g` is bound to the function in definitive:
 
 ```julia-repl
 julia> g(x) = f(x,a)
@@ -63,8 +54,7 @@ julia> g = 2
 ERROR: invalid redefinition of constant g
 ```
 
-While in the former case `g` can be redefined at will, as it is only a
-label bound to the address of an anonymous function:
+While in the former case `g` can be redefined at will, as it is only a label bound to the address of an anonymous function:
 
 ```julia-repl
 julia> g = x -> f(x,a)
@@ -74,8 +64,7 @@ julia> g = 2
 2
 ```
 
-Anonymous functions for functions with multiple parameters can also be
-defined, with, for example,
+Anonymous functions for functions with multiple parameters can also be defined, with, for example,
 
 ```
 (x,y) -> f(x,y,a,b,c)
@@ -83,40 +72,25 @@ defined, with, for example,
 
 ## Use case
 
-As exemplified for the `findfirst` function, the most important use for
-closures is passing functions as arguments to other functions, in
-particular when the function needs additional data to be evaluated.
-Consider the following toy example which reproduces a common scenario in
-which closures appear:
+As exemplified for the `findfirst` function, the most important use for closures is passing functions as arguments to other functions, in particular when the function needs additional data to be evaluated.  Consider the following toy example which reproduces a common scenario in which closures appear:
 
-Let us suppose we have a package which implements a solver for an
-optimization problem. That is, the solver receives a function and an
-initial point, and returns the minimizer of that function. A typical call
-for such a solver would be
+Let us suppose we have a package which implements a solver for an optimization problem. That is, the solver receives a function and an initial point, and returns the minimizer of that function. A typical call for such a solver would be
 ```julia
 x = solver(f,x0)
 ```
-where `f` is the function to be minimized and `x0` the initial guess.
-Within the solver code you will find calls to `f` of the form `f(x)`.
+where `f` is the function to be minimized and `x0` the initial guess.  Within the solver code you will find calls to `f` of the form `f(x)`.
 
-If `f` is a function like `f(x) = x^2 + 2x - 3`, we can just define the
-function and call the solver with `f`.  
+If `f` is a function like `f(x) = x^2 + 2x - 3`, we can just define the function and call the solver with `f`.  
 
-However, what if `f` depends on data? For example, if `f` was defined
-as:
+However, what if `f` depends on data? For example, if `f` was defined as:
 ```
 f(x,a,b,c) = a*x^2 + b*x + c
 ```
-The solver does not explicitly support calls to `f` with general arguments,
-because that would be cumbersome. How can we then call the solver with a
-function which will be interpreted by the solver as `f(x)` but actually
-*closes over* the parameters `a`, `b`, and `c`? That is what closures
-are for.
+The solver does not explicitly support calls to `f` with general arguments, because that would be cumbersome. How can we then call the solver with a function which will be interpreted by the solver as `f(x)` but actually *closes over* the parameters `a`, `b`, and `c`? That is what closures are for.
 
 ## Example
 
-For example, lets pretend that our solver only evaluates the function
-`f` and returns:
+For example, lets pretend that our solver only evaluates the function `f` and returns:
 
 ```julia-repl
 julia> function solver(f,x)
@@ -148,37 +122,25 @@ julia> solver(x -> f(x,a,b,c),x)
 
 ```
 
-We could, also, use `g = x -> f(x,a,b,c)`, but this option will be less
-preferred as it is just a wacky way to write `g(x) = f(x,a,b,c)`.  
+We could, also, use `g = x -> f(x,a,b,c)`, but this option will be less preferred as it is just a wacky way to write `g(x) = f(x,a,b,c)`.  
 
 ## Scope of variables
 
-In the examples of the previous section, the parameters `a`, `b`, and
-`c` of the function `f` were defined in the global scope will cause
-type-instability problems. In the definition of the closure as 
+In the examples of the previous section, the parameters `a`, `b`, and `c` of the function `f` were defined in the global scope will cause type-instability problems. In the definition of the closure as 
 ```julia
 g(x) = f(x,a,b,c)
 
 ```
-this is quite evident, as `g` does not receive the parameters as
-arguments (the purpose of the closure was that) and thus `g` is using
-those parameters from the global scope.
+this is quite evident, as `g` does not receive the parameters as arguments (the purpose of the closure was that) and thus `g` is using those parameters from the global scope.
 
-Using the anonymous functions the scope of the parameters is the same,
-even if this is less evident. In
+Using the anonymous functions the scope of the parameters is the same, even if this is less evident. In
 ```julia
 solver(x -> f(x,a,b,c), x) 
 
 ```
-the anonymous function `x -> f(x,a,b,c)` was parsed at the *calling*
-scope, not at the scope of the solver. Therefore, except for not having
-a name, it behaves exactly as the former `g(x)`, thus the parameters are
-non-constant globals and will introduce type instabilities and
-performance penalties.  
+the anonymous function `x -> f(x,a,b,c)` was parsed at the *calling* scope, not at the scope of the solver. Therefore, except for not having a name, it behaves exactly as the former `g(x)`, thus the parameters are non-constant globals and will introduce type instabilities and performance penalties.  
 
-The parameters of the closure have to be, therefore, made constant for
-the code to be type-stable and performant. This can be done by declaring
-them as constant,
+The parameters of the closure have to be, therefore, made constant for the code to be type-stable and performant. This can be done by declaring them as constant,
 ```julia-repl
 julia> const a, b, c = 1, 2, 3;
 
@@ -186,10 +148,7 @@ julia> solver(x -> f(x,a,b,c), x)
 38.0
 
 ```
-or wrapping the call to the solver in a function that receives the data
-as parameters, in which case the
-scope of the data will be the scope of the calling function of the
-solver, not the global scope:
+or wrapping the call to the solver in a function that receives the data as parameters, in which case the scope of the data will be the scope of the calling function of the solver, not the global scope:
 ```julia-repl
 julia> function h(x,a,b,c) 
          return solver(x -> f(x,a,b,c),x)
@@ -200,27 +159,15 @@ julia> h(x,a,b,c)
 38.0
 
 ```
-(one could have written `h(x,a,b,c) = solver(x->f(x,a,b,c),x)`, but the
-syntax above is more explicit in the fact that `h` has its own scope of
-variables). 
+(one could have written `h(x,a,b,c) = solver(x->f(x,a,b,c),x)`, but the syntax above is more explicit in the fact that `h` has its own scope of variables). 
 
 # Take away
 
-Passing functions as argument to other functions, in particular if the
-evaluation of data is required, is practical with the use of closures.
-This occurs very frequently in the context of calls to solvers, but very
-frequently also in the Julia base language, for example in the search
-and sorting, functions, among many others. One has to keep in mind that
-the closures are parsed at the calling scope, such that critical code
-for performance must always be wrapped into functions, to guarantee the
-constant types of the parameters. Let us just reinforce this point with
-an example.
+Passing functions as argument to other functions, in particular if the evaluation of data is required, is practical with the use of closures.  This occurs very frequently in the context of calls to solvers, but very frequently also in the Julia base language, for example in the search and sorting, functions, among many others. One has to keep in mind that the closures are parsed at the calling scope, such that critical code for performance must always be wrapped into functions, to guarantee the constant types of the parameters. Let us just reinforce this point with an example.
 
 # Example of type-instability 
 
-Let us write a function that operates on a vector, returning a some
-"potential energy" associated to some computation on pair of elements
-of the vector:
+Let us write a function that operates on a vector, returning a some "potential energy" associated to some computation on pair of elements of the vector:
 
 ```julia-repl
 julia> function u(f,x)
@@ -255,9 +202,7 @@ julia> u( (x,y) -> f(x,y,a,b), x )
 
 ```
 
-An analysis of the stability of the types will indicate
-type-instabilities, associated with the global scope of the parameters
-`a` and `b`: 
+An analysis of the stability of the types will indicate type-instabilities, associated with the global scope of the parameters `a` and `b`: 
 
 ```julia-repl
 julia> @code_warntype u( (x,y) -> f(x,y,a,b), x )
@@ -280,8 +225,7 @@ Body::Any
 
 ```
 
-If, alternatively, one defines an enclosing function for the call to the
-energy function,
+If, alternatively, one defines an enclosing function for the call to the energy function,
 
 ```julia-repl
 julia> h(x,a,b) =  u( (x,y) -> f(x,y,a,b), x )
@@ -289,9 +233,7 @@ h (generic function with 1 method)
 
 ```
 
-The type-instabilities are resolved, because the scope in which the
-closure is parsed is now the local scope of `h` and, thus, all variables
-have constant types:  
+The type-instabilities are resolved, because the scope in which the closure is parsed is now the local scope of `h` and, thus, all variables have constant types:  
 
 ```julia-repl
 julia> @code_warntype h(x,a,b)
@@ -314,9 +256,7 @@ Body::Float64
 
 ```
 
-In this simple example you won't see any measurable performance penalty associated
-to this type-instability, but certainly that can arise in other
-examples. 
+In this simple example you won't see any measurable performance penalty associated to this type-instability, but certainly that can arise in other examples. 
 
 
 

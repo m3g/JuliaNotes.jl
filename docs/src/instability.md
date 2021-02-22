@@ -1,18 +1,11 @@
 
 # Type instability and performance
 
-To obtaina a peformant code it is important that the types of the
-variables can be inferred by the compiler. If a variable can change type
-in an unpredictable manner, we say that there is a *type instability*.
+To obtaina a peformant code it is important that the types of the variables can be inferred by the compiler. If a variable can change type in an unpredictable manner, we say that there is a *type instability*.
 
-Type instabilities generally occur when we try to use global variables
-inside functions, that is, without passing these variables as parameters
-to the functions. Lets explain that. 
+Type instabilities generally occur when we try to use global variables inside functions, that is, without passing these variables as parameters to the functions. Lets explain that. 
 
-A global variable is anything defined in the *global scope*, that is
-outside any function or other structure that defines a scope (`let`
-blocks, for example). We obtain a global variable when writing, in the
-REPL, 
+A global variable is anything defined in the *global scope*, that is outside any function or other structure that defines a scope (`let` blocks, for example). We obtain a global variable when writing, in the REPL, 
 ```julia-repl
 julia> x = 5. 
 ```
@@ -25,8 +18,7 @@ more script.jl
 x = 5.
 ```
 
-A variable defined in this way is type unstable because you can change
-its value at any time to anything. For example,
+A variable defined in this way is type unstable because you can change its value at any time to anything. For example,
 
 ```julia-repl
 julia> x = 5.
@@ -37,9 +29,7 @@ julia> x = "ABC"
 
 ```
 
-Now, we will define a function that uses the value of `x` without
-passing `x` as a parameter. This function will sum up the elements of
-`x`:
+Now, we will define a function that uses the value of `x` without passing `x` as a parameter. This function will sum up the elements of `x`:
 
 ```julia-repl
 julia> function f()
@@ -53,9 +43,7 @@ f (generic function with 1 method)
 
 ```
 
-This function cannot be specialized for the type of variable that `x`
-is, because, as we have mentioned, `x` could be any type of variable.
-This problem can be tracked with the macro `@code_warntype`: 
+This function cannot be specialized for the type of variable that `x` is, because, as we have mentioned, `x` could be any type of variable.  This problem can be tracked with the macro `@code_warntype`: 
 
 ```julia-repl
 julia> @code_warntype f()
@@ -86,14 +74,9 @@ Body::Any
 
 ```
 
-Note that there are many `Any` in the code above, which will be
-highlighted in red if you run these commands in your REPL. That
-indicates that something is not quite right. In particular, note the
-line `Body::Any`: it indicates that the result of the body of that
-function can be of any type, in principle.    
+Note that there are many `Any` in the code above, which will be highlighted in red if you run these commands in your REPL. That indicates that something is not quite right. In particular, note the line `Body::Any`: it indicates that the result of the body of that function can be of any type, in principle.    
 
-Let us check how this function performs. We will define `x` as a vector
-of many components such that the time of `f(x)` is measured accurately:
+Let us check how this function performs. We will define `x` as a vector of many components such that the time of `f(x)` is measured accurately:
 
 ```julia-repl
 julia> x = rand(1000);
@@ -104,8 +87,7 @@ julia> @btime f()
 
 ```
 
-Now, we will define a new function that receives `x` as a parameter, and
-besides that does exactly the same thing:
+Now, we will define a new function that receives `x` as a parameter, and besides that does exactly the same thing:
 
 ```julia-repl
 julia> function g(x)
@@ -118,18 +100,9 @@ julia> function g(x)
 
 ```
 
-In this example we were obsessive by initializing `s` as
-`zero(eltype(x))`, which indicates that `s` is a zero of the same type
-of the elements of `x`. That is, if `x` is a vector of integer numbers,
-`s` will be `0` (integer), and if `x` is a vector of real numbers, `s`
-will be `0.` (real). This is not fundamental for the performance here
-tested, but it will eliminate all possible types of instability of the
-variables within that code.  
+In this example we were obsessive by initializing `s` as `zero(eltype(x))`, which indicates that `s` is a zero of the same type of the elements of `x`. That is, if `x` is a vector of integer numbers, `s` will be `0` (integer), and if `x` is a vector of real numbers, `s` will be `0.` (real). This is not fundamental for the performance here tested, but it will eliminate all possible types of instability of the variables within that code.  
 
-Now, if we call `g(x)` with a `x` of a specific type, that will create a
-`method` of that function specialized for this type of variable. For
-example, if we call `g` with the number `1`, which is an integer number,
-all operations in `g` will be performed with integers:
+Now, if we call `g(x)` with a `x` of a specific type, that will create a `method` of that function specialized for this type of variable. For example, if we call `g` with the number `1`, which is an integer number, all operations in `g` will be performed with integers:
 
 
 ```julia-repl
@@ -161,12 +134,9 @@ Body::Int64
 
 ```
 
-Note that there is no `Any` remaiing in the above code and that, in
-particular, the result of the body of the code is guaranteed to be an
-integer `Body::Int64`. 
+Note that there is no `Any` remaiing in the above code and that, in particular, the result of the body of the code is guaranteed to be an integer `Body::Int64`. 
 
-If we call the same function with the number `3.14`, which is real,
-another method is generated:
+If we call the same function with the number `3.14`, which is real, another method is generated:
 
 ```julia-repl
 julia> @code_warntype g(3.14)
@@ -197,14 +167,11 @@ Body::Float64
 
 ```
 
-Now all types of the function are `Float64` and the function is
-guaranteed to return that type of number.
+Now all types of the function are `Float64` and the function is guaranteed to return that type of number.
 
-This specialization was not possible when `x` was not a parameter of the
-function, because the *method* had to deal with any type of variables.
+This specialization was not possible when `x` was not a parameter of the function, because the *method* had to deal with any type of variables.
 
-How the performance of these methods compare with the previous
-implementation that had type instabilities? Let us see:
+How the performance of these methods compare with the previous implementation that had type instabilities? Let us see:
 
 ```julia-repl
 julia> x = rand(1000);
@@ -219,21 +186,13 @@ julia> @btime g($x)
 
 ```
 
-The function `g` is about 60 times faster than `f` and, furthermore,
-does not allocate any memory. 
+The function `g` is about 60 times faster than `f` and, furthermore, does not allocate any memory. 
 
-To guarantee that function are type-stable, therefore, is one of the
-most important things in the generation of fast code.
+To guarantee that function are type-stable, therefore, is one of the most important things in the generation of fast code.
 
-Global variables, therefore, must be avoided inside functions. They must
-be passed as parameters such that specialized methods can be built. 
+Global variables, therefore, must be avoided inside functions. They must be passed as parameters such that specialized methods can be built. 
 
-Sometimes, however, the values are constants. For example, $\pi$. It would
-be strange to have to pass $\pi$ as a parameter to every function that
-uses it. Thus, $\pi$ is a constant-global, and being a constant it does
-not introduce type-instabilities. Custom constant global are defined
-with the `const` keyword, and solve the performance issue of the
-function `f` above.
+Sometimes, however, the values are constants. For example, $\pi$. It would be strange to have to pass $\pi$ as a parameter to every function that uses it. Thus, $\pi$ is a constant-global, and being a constant it does not introduce type-instabilities. Custom constant global are defined with the `const` keyword, and solve the performance issue of the function `f` above.
 
 ```julia
 julia> const x = rand(1000);
@@ -244,9 +203,5 @@ julia> @btime f()
 
 ```
 
-Yet, in this case calling the variable `x` a constant is artificial, and
-in this particular case the function `f` only computes the sum of the
-elements of that particular `x` from now on. Thus, it is much more
-reasonable to pass `x` as a parameter, and let the constants be used for
-actual constant values, as $\pi$.         
+Yet, in this case calling the variable `x` a constant is artificial, and in this particular case the function `f` only computes the sum of the elements of that particular `x` from now on. Thus, it is much more reasonable to pass `x` as a parameter, and let the constants be used for actual constant values, as $\pi$.         
 
