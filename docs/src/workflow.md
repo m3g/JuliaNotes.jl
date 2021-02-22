@@ -62,8 +62,8 @@ using MyModule # if you are in the folder where "MyModule.jl" is*
 You will be able to modify the functions inside those files and they
 will be always be automatically updated at every new call in the REPL. 
 
-These options do not work if you redefine a data structure. Then you
-have to restart over. I usually keep also a script which just runs the
+These options do not work if you redefine a constant, such as a struct or try to redefine a function as a variable. 
+Then you have to restart over. I usually keep also a script which just runs the
 above commands to restart the developing section when that is needed,
 starting julia with `julia -i devel.jl`.
 
