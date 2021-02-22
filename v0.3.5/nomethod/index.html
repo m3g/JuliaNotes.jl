@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>ERROR: No method... · JuliaNotes.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="JuliaNotes.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit">JuliaNotes.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../workflow/">Development workflow</a></li><li><a class="tocitem" href="../modules/">Modules and Revise</a></li><li><a class="tocitem" href="../loopscopes/">Scope of loops</a></li><li><a class="tocitem" href="../benchmark/">Benchmark</a></li><li><a class="tocitem" href="../assignment/">Assignment and mutation</a></li><li><a class="tocitem" href="../instability/">Type instability</a></li><li><a class="tocitem" href="../closures/">Closures</a></li><li><a class="tocitem" href="../splitting/">Union splitting</a></li><li><a class="tocitem" href="../memory/">Tracking allocations</a></li><li><a class="tocitem" href="../immutable/">Immutable variables</a></li><li class="is-active"><a class="tocitem" href>ERROR: No method...</a></li><li><a class="tocitem" href="../typevariance/">Vector{Int} &lt;: Vector{Real} is false???</a></li><li><a class="tocitem" href="../publish_docs/">Publish Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>ERROR: No method...</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>ERROR: No method...</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/m3g/JuliaNotes.jl/blob/master/docs/src/nomethod.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="ERROR:-MethodError:-no-method-matching...."><a class="docs-heading-anchor" href="#ERROR:-MethodError:-no-method-matching....">ERROR: MethodError: no method matching....</a><a id="ERROR:-MethodError:-no-method-matching....-1"></a><a class="docs-heading-anchor-permalink" href="#ERROR:-MethodError:-no-method-matching...." title="Permalink"></a></h1><p>This is a common error message, which is related to one of the most fundamental characteristics of the Julia language: multiple dispatch.  Multiple dispatch is the specialization of a function to every one of its arguments.  </p><p>For example, if we define the following function:</p><pre><code class="language-julia-repl">julia&gt; f(x,y) = 2*x + y
+f (generic function with 1 method)
+</code></pre><p>We have a function that can receive different types of variables (such as scalar integers or floats, or vectors, etc.). This function will be specialized for each type of variables on input. The <code>@code_typed</code> macro displays what the codes becomes after the type-specialization of the variables. For example, with integers, we have:</p><p>Temos uma função que pode receber diferentes tipos de variáveis (como escalares inteiros ou reais, vetores, etc), e a função será especializada no momento da execução para cada tipo de variável. A <em>macro</em> <code>@code_typed</code> mostra a representação da função em um nível mais baixo, quando executada com diferentes argumentos. Com um número inteiro, temos:</p><pre><code class="language-julia-repl">julia&gt; @code_typed f(1,1)
+CodeInfo(
+1 ─ %1 = Base.mul_int(2, x)::Int64
+│   %2 = Base.add_int(%1, y)::Int64
+└──      return %2
+) =&gt; Int64
+</code></pre><p>Note that the function calls <code>Base.mul_int</code> and <code>Base.add_int</code>, which are specialized functions to multiply and add integer numbers. </p><p>If we call the same function with real numbers, we have, first a conversion of the number <code>2</code> from integer to float, and then specialized functions are called to multiply and add these floating point numbers:</p><pre><code class="language-julia-repl">julia&gt; @code_typed f(1.0,1.0)
+CodeInfo(
+1 ─ %1 = Base.sitofp(Float64, 2)::Float64
+│   %2 = Base.mul_float(%1, x)::Float64
+│   %3 = Base.add_float(%2, y)::Float64
+└──      return %3
+) =&gt; Float64
+</code></pre><p>Therefore, the code of <code>f(x,y)</code> was specialized, at execution time, to different types of variables, and will produce fast compiled versions of the code in each case. </p><p>We can define functions for which we restrict the types of variables accepted. For example, let us define a function that only accepts numbers, but not vectors:</p><pre><code class="language-julia-repl">julia&gt; g(x::Number,y::Number) = 2*x + y
+g (generic function with 1 method)
+
+julia&gt; g(1,1)
+3
+
+julia&gt; g(1.0,1.0)
+3.0
+</code></pre><p>For now the function is exactly the same as the previous <code>f(x,y)</code>.</p><p>The function <code>f(x,y)</code> could, however, accept vectors as parameters:</p><pre><code class="language-julia-repl">julia&gt; x = [1,1]; y = [2,2];
+
+julia&gt; f(x,y)
+2-element Array{Int64,1}:
+ 4
+ 4
+</code></pre><p>However, <code>g(x,y)</code> is called with vectors as arguments, we now have an error:    </p><pre><code class="language-julia-repl">julia&gt; g(x,y)
+ERROR: MethodError: no method matching g(::Array{Int64,1}, ::Array{Int64,1})
+Stacktrace:
+ [1] top-level scope at REPL[9]:1
+</code></pre><p>The error is quite explicit: there is no definition of the function <code>g</code> which is intended to accept arrays as parameters.   </p><p>Therefore, if you got one error of this type in your program, that means that some function is being call with the wrong arguments. That might mean the argument of the incorrect type, or the wrong number of arguments. For example:</p><pre><code class="language-julia-repl">julia&gt; f(x)
+ERROR: MethodError: no method matching f(::Array{Int64,1})
+Closest candidates are:
+  f(::Any, ::Any) at REPL[1]:1
+Stacktrace:
+ [1] top-level scope at REPL[10]:1
+</code></pre><p>Debug your code to find where this error occurs, and check each parameter being fed to the function. Compare it with the definitions of the methods of that function, if necessary. The methods of a function can be listed, for example, with:</p><pre><code class="language-julia-repl">julia&gt; methods(g)
+# 1 method for generic function &quot;g&quot;:
+[1] g(x::Number, y::Number) in Main at REPL[4]:1
+</code></pre><p>Why, then, one would restrict the type of variable a function can receive? There are two reasons for that: 1) Make the code clearer to the user, by specifying the type of variable that a function is expected to receive and 2) Anticipate an error.  For example, the function <code>f</code> can receive two vectors because the sum of two vectors is well defined.  However, the sum of a vector with a scalar is not. Therefore,</p><pre><code class="language-julia-repl">julia&gt; x = [1,1]; y = 2;
+
+julia&gt; f(x,y)
+ERROR: MethodError: no method matching +(::Array{Int64,1}, ::Int64)
+For element-wise addition, use broadcasting with dot syntax: array .+
+scalar
+</code></pre><p>We get a method error here because the sum of a scalar with an array is not defined. We could have anticipated that error in our function by accepting only numbers (as in our definition of <code>g</code>), only vectors, or, more interestingly, only elements of the same type:</p><pre><code class="language-julia-repl">julia&gt; h(x::T, y::T) where T = 2*x + y
+h (generic function with 1 method)
+</code></pre><p>Now <code>T</code> is a parametric type, and we only require that <code>x</code> and <code>y</code> are of the same type <code>T</code>. Now, we have:</p><pre><code class="language-julia-repl">julia&gt; h(1,1)
+3
+
+julia&gt; x = [1,1]; y = [2,2];
+
+julia&gt; h(x,y)
+2-element Array{Int64,1}:
+ 4
+ 4
+
+julia&gt; x = [1,1]; y = 2;
+
+julia&gt; h(x,y)
+ERROR: MethodError: no method matching h(::Array{Int64,1}, ::Int64)
+</code></pre><p>We only get an error if the two types are different, in which case the addition is not defined. And the error occurs not in the call to the <code>+</code> function, as with the function <code>f</code>, but in the call to <code>h</code>, anticipating the error and, perhaps, facilitating the debugging of the program. </p><p>Alternativelly, we could have defined a new method to the function <code>g</code>, accepting only vectors:</p><pre><code class="language-julia-repl">julia&gt; g(x::Vector, y::Vector) = 2*x + y
+g (generic function with 2 methods)
+</code></pre><p>Note that <code>g</code> has now <em>two</em> methods:</p><pre><code class="language-julia-repl">julia&gt; methods(g)
+# 2 methods for generic function &quot;g&quot;:
+[1] g(x::Number, y::Number) in Main at REPL[4]:1
+[2] g(x::Array{T,1} where T, y::Array{T,1} where T) in Main at
+REPL[21]:1
+</code></pre><p>One of these methods only accepts scalars, the other only accepts arrays. The most specific method for the type of variable being provided to the function will be used. This can be seen, for example, with the function <code>f</code>. Currently, it has only one method without any type specification:  </p><pre><code class="language-julia-repl">julia&gt; methods(f)
+# 1 method for generic function &quot;f&quot;:
+[1] f(x, y) in Main at REPL[1]:1
+</code></pre><p>Of course the function <code>f</code> cannot receive strings. However, we can define a new method for <code>f</code> which does receive strings:  </p><pre><code class="language-julia-repl">julia&gt; f(x::String, y::String) = &quot;$x $x $y&quot;
+f (generic function with 2 methods)
+
+julia&gt; f(&quot;abc&quot;,&quot;def&quot;)
+&quot;abc abc def&quot;
+</code></pre><p>We defined a method for <code>f</code> which does more or less what one would expect from <code>2x + y</code> with strings, and this method is now invoked if <code>f</code> receives two strings as input, despite the other method being completely general. That is, the most specific method was invoked. </p><p>More interestingly, we can define a method for <code>f</code> which actually performs what one could expect from the syntax associated to the addition of a vector and a scalar (which, if meaning anything, probably should mean summing the scalar to every element of the vector):</p><pre><code class="language-julia-repl">julia&gt; f(x::Vector, y::Number) = 2*x .+ y
+f (generic function with 3 methods)
+
+julia&gt; x = [1,1]; y=2
+2
+
+julia&gt; f(x,y)
+2-element Array{Int64,1}:
+ 4
+ 4
+</code></pre><p>Note the <code>.</code> in the definition of the sum, which is the <code>broadcast</code> operator, which implies that the sum will be performed for every element of <code>x</code>. </p><p>Of course, it is always recommended to define methods that perform conceptually the same thing, but with different types of variables, for the same function.  </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../immutable/">« Immutable variables</a><a class="docs-footer-nextpage" href="../typevariance/">Vector{Int} &lt;: Vector{Real} is false??? »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 22 February 2021 17:09">Monday 22 February 2021</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
