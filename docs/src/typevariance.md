@@ -28,7 +28,7 @@ We need a notation for the *set of vectors* that may contain real numbers, restr
 No actual vector is, therefore, of type `Vector{<:Real}`. To be very redundant:
 
 ```julia-repl
-julia> typeof(Real[1,2.0,π,Float32(7)]) == Vector{<:Real}
+julia> Real[1,2.0,π,Float32(7)] isa Vector{<:Real}
 false
 ```
 
@@ -45,7 +45,7 @@ true
 When one uses `Vector{<:Real}` we are referring a *set* of types. The final confusion that may arise, is, for example, that:
 
 ```julia-repl
-julia> typeof(Int64[1,2,3]) == Vector{<:Int64}
+julia> Int64[1,2,3] isa Vector{<:Int64}
 false
 ```
 
