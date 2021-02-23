@@ -23,7 +23,7 @@ Vector{Float64} <: Vector{Real} == false
 
 Second, the usual confusion is that `Vector{Real}` is intuitively thought as *all types of vectors that contain real numbers*. Well, this is the wrong way of reading that. As pointed above, `Vector{Real}` is the type of a concrete vector that *is able* to contain any type of real number. Thus, this does not include the vectors that *cannot*  contain `Int64`s, for instance. 
 
-We need a notation for the *set of vectors* that may contain real numbers, restricted or not by type. The notation might sound arbitrary, but we need one, and it is `Vector{<:Real}`. Since this is the notation that encompasses different types of vectors, it is an *abstract type*, contrary to the other two above, which are *concrete types*.
+We need a notation for the *set of vectors* that may contain real numbers, restricted or not by type. The notation might sound arbitrary, but we need one, and it is `Vector{<:Real}`. Since this is the notation that encompasses different types of vectors, it is an *abstract type**, contrary to the other two above, which are *concrete types*.
 
 No actual vector is, therefore, of type `Vector{<:Real}`. To be very redundant:
 
@@ -70,6 +70,11 @@ true
 
 ```
 Note that isa corresponds to `typeof(x) <: T`, not `typeof(x) == T`. This makes sense because then `1 isa Number`, for example, while `typeof(1) == Number` is `false`, because `Number` is an abstract type.
+
+
+*Strictly speaking, in the Julia language, something like `Vector{<:Real}`  is of the `UnionAll` type, which is something in between between a completely abstract type which only serve as nodes in the type tree, and a concrete type which can actually be instantiated. `UnionAll` types do have information on how they should be instantiated, by that information is not complete.
+
+Note: This text was originally posted as a response to [this thread](https://discourse.julialang.org/t/why-isa-x-1-y-1-array-tuple-stuff-number-1-false/55777), and its final form includes contributions from other people, as indicated in the thread.
 
 
 
