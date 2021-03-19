@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Union splitting · JuliaNotes.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="JuliaNotes.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit">JuliaNotes.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../workflow/">Development workflow</a></li><li><a class="tocitem" href="../modules/">Modules and Revise</a></li><li><a class="tocitem" href="../loopscopes/">Scope of loops</a></li><li><a class="tocitem" href="../benchmark/">Benchmark</a></li><li><a class="tocitem" href="../assignment/">Assignment and mutation</a></li><li><a class="tocitem" href="../instability/">Type instability</a></li><li><a class="tocitem" href="../closures/">Closures</a></li><li class="is-active"><a class="tocitem" href>Union splitting</a></li><li><a class="tocitem" href="../memory/">Tracking allocations</a></li><li><a class="tocitem" href="../immutable/">Immutable variables</a></li><li><a class="tocitem" href="../nomethod/">ERROR: No method...</a></li><li><a class="tocitem" href="../typevariance/">Vector{Int} &lt;: Vector{Real} is false???</a></li><li><a class="tocitem" href="../publish_docs/">Publish Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Union splitting</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Union splitting</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/m3g/JuliaNotes.jl/blob/master/docs/src/splitting.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Dealing-with-mixed-type-arrays"><a class="docs-heading-anchor" href="#Dealing-with-mixed-type-arrays">Dealing with mixed-type arrays</a><a id="Dealing-with-mixed-type-arrays-1"></a><a class="docs-heading-anchor-permalink" href="#Dealing-with-mixed-type-arrays" title="Permalink"></a></h1><p>To be explained.</p><pre><code class="language-julia">using BenchmarkTools
+abstract type Material end
+
+struct Material1 &lt;: Material
+  m :: Float64
+end
+
+struct Material2 &lt;: Material
+  m :: Float64
+end
+
+struct HitPoint{T &lt;: Material}
+  p :: Float64
+  r :: Float64
+  m :: T
+end
+
+#hit(p::HitPoint) = p.r*p.p*p.m.m
+
+# the key is to create specialized methods for every subtype:
+for type in subtypes(Material)
+  eval(:(hit(p::HitPoint{$type}) = p.r*p.p*p.m.m))
+  eval(:((p::HitPoint{$type})() = p.r*p.p*p.m.m))
+end
+
+function hits_naive(hitpoints)
+  s = 0.
+  for p in hitpoints 
+    s += hit(p)
+  end
+  s
+end
+
+function hits_splitting(hitpoints)
+  s = 0.
+  for p in hitpoints
+    if p isa HitPoint{Material1}
+      s += hit(p::HitPoint{Material1})
+    elseif p isa HitPoint{Material2}
+      s += hit(p::HitPoint{Material2})
+    end
+  end
+  s
+end
+
+function hits_functors(hitpoints)
+  s = 0.
+  for p in hitpoints 
+    s += p()
+  end
+  s
+end
+
+
+using BenchmarkTools
+
+n = 1000
+hitpoints = [ rand(Bool) ? HitPoint(rand(),rand(),Material1(rand())) : 
+              HitPoint(rand(),rand(),Material2(rand())) for i in 1:n ]
+
+println(&quot; Mixed types: &quot;)
+print(&quot;naive:&quot;);@btime hits_naive($hitpoints)
+print(&quot;split:&quot;);@btime hits_splitting($hitpoints)
+print(&quot;funct:&quot;);@btime hits_functors($hitpoints)
+
+hitpoints_single = HitPoint{Material1}[ HitPoint(rand(),rand(),Material1(rand())) for i in 1:n ]
+
+println(&quot; Single type: &quot;)
+print(&quot;naive:&quot;);@btime hits_naive($hitpoints_single)
+print(&quot;split:&quot;);@btime hits_splitting($hitpoints_single)
+print(&quot;funct:&quot;);@btime hits_functors($hitpoints_single)
+</code></pre><p>Results:</p><pre><code class="language-julia-repl">julia&gt; include(&quot;./splitting2.jl&quot;)
+ Mixed types:
+naive:  1.510 μs (0 allocations: 0 bytes)
+split:  2.975 μs (0 allocations: 0 bytes)
+funct:  1.266 μs (0 allocations: 0 bytes)
+ Single type:
+naive:  992.167 ns (0 allocations: 0 bytes)
+split:  991.833 ns (0 allocations: 0 bytes)
+funct:  991.833 ns (0 allocations: 0 bytes)
+117.02622654899025
+</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../closures/">« Closures</a><a class="docs-footer-nextpage" href="../memory/">Tracking allocations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 19 March 2021 16:39">Friday 19 March 2021</span>. Using Julia version 1.5.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
