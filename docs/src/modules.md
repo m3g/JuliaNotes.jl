@@ -27,12 +27,12 @@ Create a file called, for example, `MyModule.jl`, in which you define a module o
 
 ```julia
 module MyModule
-  include("./f.jl")  
   export f
+  include("./f.jl")  
 end
 ```
 
-The `export f` command makes the `f` function be visible from outside the module. That is, later when you load the module with `using MyModule` you will be able to directly call `f(x)` instead of having to type `MyModule.f(1)`. Exporting or not functions is optional.
+The `export f` command makes the `f` function visible from outside the module. That is, later when you load the module with `using MyModule` you will be able to directly call `f(x)` instead of having to type `MyModule.f(1)`. Exporting or not functions is optional.
 
 ### Develop using `Revise`
 
