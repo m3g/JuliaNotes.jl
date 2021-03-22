@@ -35,6 +35,17 @@ and the second key has to be copied to:
 
 with the name `DOCUMENTER_KEY`.
 
+### Set the GitHub page in the GitHub repository
+
+In the GitHub repository, do:
+
+```
+Settings -> GitHub Pages -> choose gh-pages (/root)
+```
+
+(that is, go to Seetings, scroll down, on the GitHub pages section, choose the `gh-pages` banch to
+deploy your page. 
+
 ## For a package not registered
 
 ### Add the GithubActions workflow file
