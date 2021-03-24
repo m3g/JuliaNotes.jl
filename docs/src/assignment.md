@@ -28,5 +28,48 @@ julia> println(x,y,z)
 
 ```
 
+### Another way to put it:
+
+That admittedly is confusing at the beginning. One gets used to it, though, and after that one notes that actually there is no way out from that if one wants to have a dynamically typed language.
+
+The fact that the language is dynamic requires that we can do 
+
+```julia
+julia> x = [1,2]
+2-element Array{Int64,1}:
+ 1
+ 2
+
+julia> x = π
+π = 3.1415926535897...
+
+```
+
+That is completely natural, but means that `=` is just the binding of a name to a value (which might be an array, or scalar, or whatever). 
+
+Thus, we need to be able to differentiate naming something from mutating something. Mutating is a function that acts on a mutable object. It is the `setindex!` function:
+
+```julia
+julia> x = [1,2]
+2-element Array{Int64,1}:
+ 1
+ 2
+
+julia> setindex!(x,10,1)
+2-element Array{Int64,1}:
+ 10
+  2
+```
+
+Which, by convenience (obviously) can be called with the notation:
+
+```julia
+julia> x[1] = 10
+10
+
+```
+
+But this last `x[1] = 10` is a call to `setindex!`, not a name assignment as the other cases. (and a broadcasting of assignments, with `.=`, is just a loop calling `setindex!` for each element)
+
 
 
