@@ -15,11 +15,12 @@ makedocs(
         "Assignment and mutation" => "assignment.md",
         "Type instability" => "instability.md",
         "Closures" => "closures.md",
-        "Union splitting" => "splitting.md",
+        #"Union splitting" => "splitting.md",
         "Tracking allocations" => "memory.md",
         "Immutable variables" => "immutable.md",
         "ERROR: No method..." => "nomethod.md",
         "Vector{Int} <: Vector{Real} is false???" => "typevariance.md",
+        "Create new package" => "new_package.md",
         "Publish Docs" => "publish_docs.md",
     ]
 )
