@@ -13,8 +13,6 @@ f (generic function with 1 method)
 
 We have a function that can receive different types of variables (such as scalar integers or floats, or vectors, etc.). This function will be specialized for each type of variables on input. The `@code_typed` macro displays what the codes becomes after the type-specialization of the variables. For example, with integers, we have:
 
-Temos uma função que pode receber diferentes tipos de variáveis (como escalares inteiros ou reais, vetores, etc), e a função será especializada no momento da execução para cada tipo de variável. A *macro* `@code_typed` mostra a representação da função em um nível mais baixo, quando executada com diferentes argumentos. Com um número inteiro, temos:
-
 ```julia-repl
 julia> @code_typed f(1,1)
 CodeInfo(
