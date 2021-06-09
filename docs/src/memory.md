@@ -25,7 +25,7 @@ const tmr = TimerOutput();
 
 In the code, flag the code lines or blocks with the `@timeit` macro. For example:
 
-```
+```julia
 struct A
   x
 end
@@ -116,7 +116,7 @@ julia> test(10,rand());
 
 Exit Julia, this will generate a file `test.jl.XXX.mem` (extension `.mem`), which, in this case, contains:
 
-```
+```julia
         -
         - struct A
         -   x

@@ -5,7 +5,7 @@
 
 Create an *EMPTY* repository on github, with your package name followed by `.jl`. For example: 
 ```
-https://github.com/lmiq/MyPackage.jl` 
+https://github.com/lmiq/MyPackage.jl
 ```
 
 ### Use `PkgTemplates` to create the minimal package structure:
