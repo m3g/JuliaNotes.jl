@@ -23,43 +23,28 @@ LS0tLS1CRUdJTiBPUEVOU1NIIFBSSV... MGtyNng2VWR6WTFxckg1bkUyVGU2ajU3TUdveXpZL1EzTA
 
 ### Add the keys to the github repository
 
-*Warning:* <s>Be careful to not introduce newlines or any other strange character when copying and pasting the keys. In particular, the secret must be all in one line. That was part of the problem.</s> fixed now by Chistopher
-
-The first key, starting with `ssh-rsa ` must be copied as a new "Deploy key` in the project, at (Currently at:
+The first key, starting with `ssh-rsa ` must be copied as a new "Deploy key` in the project, at: 
 
 `Settings -> Deploy keys -> Add deploy key`
 
-and the second key has to be copied to:
+Be careful in allowing `Write permissions`. The second key has to be copied to:
 
 `Settings -> Secrets -> New repository secret` 
 
 with the name `DOCUMENTER_KEY`.
 
-### Set the GitHub page in the GitHub repository
-
-In the GitHub repository, do:
-
-```
-Settings -> GitHub Pages -> choose gh-pages (/root)
-```
-
-(that is, go to Seetings, scroll down, on the GitHub pages section, choose the `gh-pages` banch to
-deploy your page. 
-
-## For a package not registered
-
-### Add the GithubActions workflow file
+## Add the GithubActions (cy.yml) workflow file
 
 Create, in your project, a file 
 ```
-/home/user/.julia/dev/Project/.github/workflows/CI.yml
+/home/user/.julia/dev/Project/.github/workflows/ci.yml
 ```
 with a content similar to [THIS](https://github.com/m3g/JuliaNotes.jl/blob/main/.github/workflows/ci.yml) one.
 
 Note that you have to change some lines that contain the name of the
 package name (`JuliaNotes` - two substitutions).
 
-### Create a release
+## Create a release
 
 Go to the github page. Go to `Releases` $\rightarrow$ `Draft a new Release`. Create a new tag for the new version (for example, `v0.2.0`) or a tag only for deploying the documentation (for example, `v0.1.0+doc1`). That will trigger the execution of the CI run and, hopefully, build the docs and the `gh-branch` that contain the docs automatically. 
 
@@ -74,6 +59,23 @@ git tag -a v0.1.0+doc2 -m "v0.1.0"
 git push --tag
 ```
 
+## Create the gh-pages branch and choose it to deploy the page
+
+I have seen these steps happening automatically after the tag is created. If not, follow the steps below. 
+
+Create a branch on the repository called `gh-pages`. (the following step appears to occur automaticaly now, after the branch is created).
+
+In the GitHub repository, do:
+
+```
+Settings -> GitHub Pages -> choose gh-pages (/root)
+```
+
+(that is, go to Seetings, scroll down, on the GitHub pages section, choose the `gh-pages` banch to
+deploy your page. 
+
+At this point, the site should be published.
+
 ## For a registered package
 
 In this case, you might want `TagBot` to tag and release automatically the documentation of new versions:
@@ -85,7 +87,7 @@ In this case, you might want `TagBot` to tag and release automatically the docum
 ```
 and add the content provided here: [TagBot.yml example](https://github.com/JuliaRegistries/TagBot/blob/master/README.md)
 
-## Deployment of the docs of a previous version
+### Deployment of the docs of a previous version
 
 I went to the registered commit, which always have the following information, for example:
 
