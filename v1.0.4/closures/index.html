@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Closures · JuliaNotes.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="JuliaNotes.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">JuliaNotes.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../workflow/">Development workflow</a></li><li><a class="tocitem" href="../modules/">Modules and Revise</a></li><li><a class="tocitem" href="../loopscopes/">Scope of loops</a></li><li><a class="tocitem" href="../benchmark/">Benchmark</a></li><li><a class="tocitem" href="../assignment/">Assignment and mutation</a></li><li><a class="tocitem" href="../instability/">Type instability</a></li><li class="is-active"><a class="tocitem" href>Closures</a><ul class="internal"><li><a class="tocitem" href="#Basic-syntax"><span>Basic syntax</span></a></li><li><a class="tocitem" href="#Use-case"><span>Use case</span></a></li><li><a class="tocitem" href="#Example"><span>Example</span></a></li><li><a class="tocitem" href="#Scope-of-variables"><span>Scope of variables</span></a></li><li class="toplevel"><a class="tocitem" href="#Take-away"><span>Take away</span></a></li><li class="toplevel"><a class="tocitem" href="#Example-of-type-instability"><span>Example of type-instability</span></a></li></ul></li><li><a class="tocitem" href="../memory/">Tracking allocations</a></li><li><a class="tocitem" href="../immutable/">Immutable variables</a></li><li><a class="tocitem" href="../nomethod/">ERROR: No method...</a></li><li><a class="tocitem" href="../typevariance/">Vector{Int} &lt;: Vector{Real} is false???</a></li><li><a class="tocitem" href="../figures/">Figures and LaTeX</a></li><li><a class="tocitem" href="../new_package/">Create new package</a></li><li><a class="tocitem" href="../publish_docs/">Publish Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Closures</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Closures</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/m3g/JuliaNotes.jl/blob/master/docs/src/closures.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Closures-and-anonymous-functions"><a class="docs-heading-anchor" href="#Closures-and-anonymous-functions">Closures and anonymous functions</a><a id="Closures-and-anonymous-functions-1"></a><a class="docs-heading-anchor-permalink" href="#Closures-and-anonymous-functions" title="Permalink"></a></h1><p>Closures are an important part of the Julia syntax, and permeate many of the codes in Julia. They will appear most commonly with the syntax of anonymous functions.</p><p>For example, a simple example of the use of closures is the <code>findfirst</code> function, which returns the element of an array which first matches a condition:</p><pre><code class="language-julia-repl">julia&gt; x = [ 0, π/4, π/2, π ]
+4-element Array{Float64,1}:
+ 0.0
+ 0.7853981633974483
+ 1.5707963267948966
+ 3.141592653589793
+
+julia&gt; findfirst( x -&gt; sin(x) &gt; 0.5, x )
+2</code></pre><p>The <code>x -&gt; sin(x) &gt; 0.5</code> is an anonymous function, which one can read as &quot;given <code>x</code> return <code>sin(x) &gt; 0.5</code>&quot;, which in this case can be <code>true</code> or <code>false</code>. That function, <code>x -&gt; sin(x) &gt; 0.5</code> is, therefore, a <em>callable object</em>, which returns different values for each given <code>x</code>, much as a any other function. These <em>callable objects</em> are named <em>closures</em>. </p><h2 id="Basic-syntax"><a class="docs-heading-anchor" href="#Basic-syntax">Basic syntax</a><a id="Basic-syntax-1"></a><a class="docs-heading-anchor-permalink" href="#Basic-syntax" title="Permalink"></a></h2><p>Consider the following function:</p><pre><code class="language-julia">a = 5
+f(x,a) = a*x
+</code></pre><p>An anonymous function which, given <code>x</code>, returns the result of <code>f(x,a)</code>, is written as</p><pre><code class="language-julia">x -&gt; f(x,a) </code></pre><p>The anonymous function can be bound to a variable,</p><pre><code class="language-julia">g = x -&gt; f(x,a)</code></pre><p>and <code>g</code> will be a function that, given <code>x</code>, returns <code>f(x,a)</code>. This definition is similar to</p><pre><code class="language-julia">g(x) = f(x,a)</code></pre><p>Except that in the latter case the label <code>g</code> is bound to the function in definitive:</p><pre><code class="language-julia-repl">julia&gt; g(x) = f(x,a)
+g (generic function with 1 method)
+
+julia&gt; g = 2
+ERROR: invalid redefinition of constant g</code></pre><p>While in the former case <code>g</code> can be redefined at will, as it is only a label bound to the address of an anonymous function:</p><pre><code class="language-julia-repl">julia&gt; g = x -&gt; f(x,a)
+#1 (generic function with 1 method)
+
+julia&gt; g = 2
+2</code></pre><p>Anonymous functions for functions with multiple parameters can also be defined, with, for example,</p><pre><code class="nohighlight">(x,y) -&gt; f(x,y,a,b,c)</code></pre><h2 id="Use-case"><a class="docs-heading-anchor" href="#Use-case">Use case</a><a id="Use-case-1"></a><a class="docs-heading-anchor-permalink" href="#Use-case" title="Permalink"></a></h2><p>As exemplified for the <code>findfirst</code> function, the most important use for closures is passing functions as arguments to other functions, in particular when the function needs additional data to be evaluated.  Consider the following toy example which reproduces a common scenario in which closures appear:</p><p>Let us suppose we have a package which implements a solver for an optimization problem. That is, the solver receives a function and an initial point, and returns the minimizer of that function. A typical call for such a solver would be</p><pre><code class="language-julia">x = solver(f,x0)</code></pre><p>where <code>f</code> is the function to be minimized and <code>x0</code> the initial guess.  Within the solver code you will find calls to <code>f</code> of the form <code>f(x)</code>.</p><p>If <code>f</code> is a function like <code>f(x) = x^2 + 2x - 3</code>, we can just define the function and call the solver with <code>f</code>.  </p><p>However, what if <code>f</code> depends on data? For example, if <code>f</code> was defined as:</p><pre><code class="nohighlight">f(x,a,b,c) = a*x^2 + b*x + c</code></pre><p>The solver does not explicitly support calls to <code>f</code> with general arguments, because that would be cumbersome. How can we then call the solver with a function which will be interpreted by the solver as <code>f(x)</code> but actually <em>closes over</em> the parameters <code>a</code>, <code>b</code>, and <code>c</code>? That is what closures are for.</p><h2 id="Example"><a class="docs-heading-anchor" href="#Example">Example</a><a id="Example-1"></a><a class="docs-heading-anchor-permalink" href="#Example" title="Permalink"></a></h2><p>For example, lets pretend that our solver only evaluates the function <code>f</code> and returns:</p><pre><code class="language-julia-repl">julia&gt; function solver(f,x)
+          y = f(x)
+          return y
+       end
+solver (generic function with 1 method)</code></pre><p>Some alternative ways to write a closure exist. The most common are:</p><pre><code class="language-julia-repl">julia&gt; g(x) = f(x,a,b,c)</code></pre><p>In which case one can do, now:</p><pre><code class="language-julia-repl">julia&gt; a = 1; b = 2; c = 3;
+
+julia&gt; x = 5.;
+
+julia&gt; solver(g,x)
+38.0
+</code></pre><p>Alternatively, one could use an anonymous function:</p><pre><code class="language-julia-repl">julia&gt; solver(x -&gt; f(x,a,b,c),x)
+38.0
+</code></pre><p>We could, also, use <code>g = x -&gt; f(x,a,b,c)</code>, but this option will be less preferred as it is just a wacky way to write <code>g(x) = f(x,a,b,c)</code>.  </p><h2 id="Scope-of-variables"><a class="docs-heading-anchor" href="#Scope-of-variables">Scope of variables</a><a id="Scope-of-variables-1"></a><a class="docs-heading-anchor-permalink" href="#Scope-of-variables" title="Permalink"></a></h2><p>In the examples of the previous section, the parameters <code>a</code>, <code>b</code>, and <code>c</code> of the function <code>f</code> were defined in the global scope will cause type-instability problems. In the definition of the closure as </p><pre><code class="language-julia">g(x) = f(x,a,b,c)
+</code></pre><p>this is quite evident, as <code>g</code> does not receive the parameters as arguments (the purpose of the closure was that) and thus <code>g</code> is using those parameters from the global scope.</p><p>Using the anonymous functions the scope of the parameters is the same, even if this is less evident. In</p><pre><code class="language-julia">solver(x -&gt; f(x,a,b,c), x) 
+</code></pre><p>the anonymous function <code>x -&gt; f(x,a,b,c)</code> was parsed at the <em>calling</em> scope, not at the scope of the solver. Therefore, except for not having a name, it behaves exactly as the former <code>g(x)</code>, thus the parameters are non-constant globals and will introduce type instabilities and performance penalties.  </p><p>The parameters of the closure have to be, therefore, made constant for the code to be type-stable and performant. This can be done by declaring them as constant,</p><pre><code class="language-julia-repl">julia&gt; const a, b, c = 1, 2, 3;
+
+julia&gt; solver(x -&gt; f(x,a,b,c), x)
+38.0
+</code></pre><p>or wrapping the call to the solver in a function that receives the data as parameters, in which case the scope of the data will be the scope of the calling function of the solver, not the global scope:</p><pre><code class="language-julia-repl">julia&gt; function h(x,a,b,c) 
+         return solver(x -&gt; f(x,a,b,c),x)
+       end
+h (generic function with 1 method)
+
+julia&gt; h(x,a,b,c)
+38.0
+</code></pre><p>(one could have written <code>h(x,a,b,c) = solver(x-&gt;f(x,a,b,c),x)</code>, but the syntax above is more explicit in the fact that <code>h</code> has its own scope of variables). </p><h1 id="Take-away"><a class="docs-heading-anchor" href="#Take-away">Take away</a><a id="Take-away-1"></a><a class="docs-heading-anchor-permalink" href="#Take-away" title="Permalink"></a></h1><p>Passing functions as argument to other functions, in particular if the evaluation of data is required, is practical with the use of closures.  This occurs very frequently in the context of calls to solvers, but very frequently also in the Julia base language, for example in the search and sorting, functions, among many others. One has to keep in mind that the closures are parsed at the calling scope, such that critical code for performance must always be wrapped into functions, to guarantee the constant types of the parameters. Let us just reinforce this point with an example.</p><h1 id="Example-of-type-instability"><a class="docs-heading-anchor" href="#Example-of-type-instability">Example of type-instability</a><a id="Example-of-type-instability-1"></a><a class="docs-heading-anchor-permalink" href="#Example-of-type-instability" title="Permalink"></a></h1><p>Let us write a function that operates on a vector, returning a some &quot;potential energy&quot; associated to some computation on pair of elements of the vector:</p><pre><code class="language-julia-repl">julia&gt; function u(f,x)
+         u = 0.
+         for i in 1:length(x)-1
+            for j in i+1:length(x)
+              u += f(x[i],x[j])
+            end
+         end
+         u
+       end
+u (generic function with 1 method)
+</code></pre><p>Let use define <code>f</code> as </p><pre><code class="language-julia-repl">julia&gt; f(x,y,a,b) = a*x - b*y
+f (generic function with 1 method)
+</code></pre><p>And we will use a closure to pass the tuple <code>(x,y)</code> to <code>f(x,y,a,b)</code>, inside <code>u</code>: </p><pre><code class="language-julia-repl">julia&gt; a = 5; b = 7;
+
+julia&gt; u( (x,y) -&gt; f(x,y,a,b), x )
+-567899.3283195692
+</code></pre><p>An analysis of the stability of the types will indicate type-instabilities, associated with the global scope of the parameters <code>a</code> and <code>b</code>: </p><pre><code class="language-julia-repl">julia&gt; @code_warntype u( (x,y) -&gt; f(x,y,a,b), x )
+Variables
+  #self#::Core.Compiler.Const(u, false)
+...
+  x::Array{Float64,1}
+  u::Any
+  @_5::Union{Nothing, Tuple{Int64,Int64}}
+...
+Body::Any
+1 ─       (u = 0.0)
+...
+│   %22 = u::Any
+│   %23 = Base.getindex(x, i)::Float64
+│   %24 = Base.getindex(x, j)::Float64
+│   %25 = (f)(%23, %24)::Any
+│         (u = %22 + %25)
+...
+</code></pre><p>If, alternatively, one defines an enclosing function for the call to the energy function,</p><pre><code class="language-julia-repl">julia&gt; h(x,a,b) =  u( (x,y) -&gt; f(x,y,a,b), x )
+h (generic function with 1 method)
+</code></pre><p>The type-instabilities are resolved, because the scope in which the closure is parsed is now the local scope of <code>h</code> and, thus, all variables have constant types:  </p><pre><code class="language-julia-repl">julia&gt; @code_warntype h(x,a,b)
+Variables
+  #self#::Core.Compiler.Const(h, false)
+  x::Array{Float64,1}
+  a::Int64
+  b::Int64
+  #18::var&quot;#18#19&quot;{Int64,Int64}
+
+Body::Float64
+1 ─ %1 = Main.:(var&quot;#18#19&quot;)::Core.Compiler.Const(var&quot;#18#19&quot;, false)
+│   %2 = Core.typeof(a)::Core.Compiler.Const(Int64, false)
+│   %3 = Core.typeof(b)::Core.Compiler.Const(Int64, false)
+│   %4 = Core.apply_type(%1, %2, %3)::Core.Compiler.Const(var&quot;#18#19&quot;{Int64,Int64}, false)
+│        (#18 = %new(%4, a, b))
+│   %6 = #18::var&quot;#18#19&quot;{Int64,Int64}
+│   %7 = Main.u(%6, x)::Float64
+└──      return %7
+</code></pre><p>In this simple example you won&#39;t see any measurable performance penalty associated to this type-instability, but certainly that can arise in other examples. </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../instability/">« Type instability</a><a class="docs-footer-nextpage" href="../memory/">Tracking allocations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.3 on <span class="colophon-date" title="Monday 5 July 2021 12:54">Monday 5 July 2021</span>. Using Julia version 1.6.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
