@@ -56,7 +56,7 @@ Which will produce this figure:
 <img src="https://raw.githubusercontent.com/m3g/JuliaNotes.jl/main/docs/src/assets/plot2.png">
 ```
 
-To control the margins, because sometimes depending on the font and figure sizes the labels might be cut, set margins (as in the example), which to be set practially need the explicit import of `Plots.Measures`, and perhaps play a little with the size (`size` parameter) of the figure. For example:
+To control the margins, because sometimes depending on the font and figure sizes the labels might be cut, set margins (as in the example), which to be set practically need the explicit import of `Plots.Measures`, and perhaps play a little with the size (`size` parameter) of the figure. For example:
 
 ```julia
 using Plots, Plots.Measures, LaTeXStrings
