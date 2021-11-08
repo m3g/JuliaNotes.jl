@@ -1,7 +1,7 @@
 
 # Modules and Revise
 
-The most practical way to develop codes in Julia, particularly when the code becomes more complex, is the write `modules` and use the `Revise` package.
+The most practical way to develop code in Julia, particularly when the code becomes more complex, is to write `modules` and use the `Revise` package.
 
 To install the `Revise` package, do:
 ```julia
