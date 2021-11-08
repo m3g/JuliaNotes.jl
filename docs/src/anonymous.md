@@ -2,7 +2,7 @@
 
 Anonymous are an important part of the Julia syntax, and permeate many of the codes in Julia.
 
-For example, a simple example of the use of closures is the `findfirst` function, which returns the element of an array which first matches a condition:
+For example, a simple example of the frequent use of anonymous functions is on calls to the `findfirst` function, which returns the element of an array which first matches a condition:
 
 ```julia-repl
 julia> x = [ 0, π/4, π/2, π ]
