@@ -100,66 +100,65 @@ julia> function solver(f,x)
 solver (generic function with 1 method)
 ```
 
-Some alternative ways to write a closure exist. The most common are:
+Then, for example, let us define a function that depends on three constant parameters besides that the variable `x`:
 ```julia-repl
-julia> g(x) = f(x,a,b,c)
-```
-In which case one can do, now:
-```julia-repl
-julia> a = 1; b = 2; c = 3;
+julia> const a, b, c = 1, 2, 3; 
 
+julia> g(x) = a*x^2 + b*x + c
+```
+
+We can do, now:
+```julia-repl
 julia> x = 5.;
 
 julia> solver(g,x)
 38.0
-
 ```
 
 Alternatively, one could use an anonymous function:
 ```julia-repl
-julia> solver(x -> f(x,a,b,c),x)
+julia> solver(x -> a*x^2 + b*x + c,x)
 38.0
-
 ```
 
-We could, also, use `g = x -> f(x,a,b,c)`, but this option will be less preferred as it is just a wacky way to write `g(x) = f(x,a,b,c)`.  
+We could, also, use `g = x -> a*x^2 + b*x + c`, but this option will be less preferred as it is just a wacky way to write `g(x) = a*x^2 + b*x +c`.  
 
 ## Scope of variables
 
-In the examples of the previous section, the parameters `a`, `b`, and `c` of the function `f` were defined in the global scope will cause type-instability problems. In the definition of the closure as 
+In the examples of the previous section, the parameters `a`, `b`, and `c` of the function `g` were defined in the global scope will cause type-instability problems. In the definition of the closure as 
 ```julia
-g(x) = f(x,a,b,c)
-
+g(x) = a*x^2 + b*x + c
 ```
 this is quite evident, as `g` does not receive the parameters as arguments (the purpose of the closure was that) and thus `g` is using those parameters from the global scope.
 
 Using the anonymous functions the scope of the parameters is the same, even if this is less evident. In
 ```julia
-solver(x -> f(x,a,b,c), x) 
-
+solver(x -> a*x^2 + b*x + c, x) 
 ```
-the anonymous function `x -> f(x,a,b,c)` was parsed at the *calling* scope, not at the scope of the solver. Therefore, except for not having a name, it behaves exactly as the former `g(x)`, thus the parameters are non-constant globals and will introduce type instabilities and performance penalties.  
+the anonymous function `x -> a*x^2 + b*x + c` was parsed at the *calling* scope, not at the scope of the solver. Therefore, except for not having a name, it behaves exactly as the former `g(x)`, thus the parameters are non-constant globals and will introduce type instabilities and performance penalties.  
 
-The parameters of the closure have to be, therefore, made constant for the code to be type-stable and performant. This can be done by declaring them as constant,
+The parameters of the closure have to be, therefore, made constant for the code to be type-stable and performant. This is why we declared them as constants,
 ```julia-repl
 julia> const a, b, c = 1, 2, 3;
-
-julia> solver(x -> f(x,a,b,c), x)
-38.0
-
 ```
-or wrapping the call to the solver in a function that receives the data as parameters, in which case the scope of the data will be the scope of the calling function of the solver, not the global scope:
+
+Alternatively (and better, because it is more flexible), we can wrap
+the call to the solver in a function that receives the data as parameters, in which case the scope of the data will be the scope of the calling function of the solver, not the global scope:
 ```julia-repl
+julia> a, b, c = 1, 2, 3; # not necessarily constant
+
 julia> function h(x,a,b,c) 
-         return solver(x -> f(x,a,b,c),x)
+         return solver(x -> a*x^2 + b*x + c,x)
        end
 h (generic function with 1 method)
+
+julia> x = 5.0;
 
 julia> h(x,a,b,c)
 38.0
 
 ```
-(one could have written `h(x,a,b,c) = solver(x->f(x,a,b,c),x)`, but the syntax above is more explicit in the fact that `h` has its own scope of variables). 
+(one could have written `h(x,a,b,c) = solver(x->a*x^2 + b*x + c,x)`, but the syntax above is more explicit in the fact that `h` has its own scope of variables). 
 
 # Take away
 
