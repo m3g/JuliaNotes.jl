@@ -24,7 +24,8 @@ Navigate to the package directory, and push the content:
 
 ```
 cd ~/.julia/dev/MyPackage
-git push --set-upstream origin master
+git push --set-upstream origin main
 ```
+(`main` was `master` in older github repositories)
 
 (From: [this thread](https://discourse.julialang.org/t/upload-new-package-to-github/56783/14))

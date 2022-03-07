@@ -16,7 +16,7 @@ Vectors of type (b) are not a subtype of vectors of type (a), of course, because
 Vector{Real} <: Vector{Float64} == false
 ```
 
-Less clear is that an array of type (a) is also not a subtype of an array of type (b). This is because an array of type (a) *has constraint* that vectors of type (b) do not. Thus, a vector of type (a) is not a subtype of vectors of type (a), and this translates to the more unnatural
+Less clear is that an array of type (a) is also not a subtype of an array of type (b). This is because an array of type (a) *has one constraint* that vectors of type (b) do not. Thus, a vector of type (a) is not a subtype of vectors of type (a), and this translates to the more unnatural
 ```julia
 Vector{Float64} <: Vector{Real} == false
 ```
