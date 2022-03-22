@@ -59,11 +59,19 @@ git tag -a v0.1.0+doc2 -m "v0.1.0"
 git push --tag
 ```
 
-## Create the gh-pages branch and choose it to deploy the page
+## Create an empty gh-pages branch and choose it to deploy the page
 
 I have seen these steps happening automatically after the tag is created. If not, follow the steps below. 
 
-Create a branch on the repository called `gh-pages`. (the following step appears to occur automaticaly now, after the branch is created).
+Create a branch on the repository called `gh-pages` using: 
+
+```
+git checkout --orphan gh-pages
+git reset --hard
+git commit --allow-empty -m "Initializing gh-pages branch"
+git push origin gh-pages
+git checkout main
+```
 
 In the GitHub repository, do:
 
@@ -71,10 +79,9 @@ In the GitHub repository, do:
 Settings -> GitHub Pages -> choose gh-pages (/root)
 ```
 
-(that is, go to Seetings, scroll down, on the GitHub pages section, choose the `gh-pages` banch to
-deploy your page. 
+(that is, go to Seetings, scroll down, on the GitHub pages section, choose the `gh-pages` banch to deploy your page).
 
-At this point, the site should be published.
+After the end of the CI run, if no error was detected, the site should be published.
 
 ## For a registered package
 
