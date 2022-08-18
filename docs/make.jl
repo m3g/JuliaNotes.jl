@@ -1,13 +1,15 @@
 import Pkg
 Pkg.add("Documenter")
 using Documenter
-using JuliaNotes
+push!(LOAD_PATH,"../")
 push!(LOAD_PATH,"../src/")
+using JuliaNotes
 makedocs(
     modules=[JuliaNotes],
     sitename="JuliaNotes.jl",
     pages = [
         "Home" => "index.md",
+        "Cool and fast REPL" => "fastrepl.md",
         "Development workflow" => "workflow.md",
         "Modules and Revise" => "modules.md",
         "Scope of loops" => "loopscopes.md",

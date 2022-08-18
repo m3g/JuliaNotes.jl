@@ -1,6 +1,19 @@
 
 # How to deploy the documentation of a project
 
+## Visualize the Docs locally
+
+The best tool I know for that is `LiveServer` and its `servedocs()` function.
+Just do:
+```julia-repl
+julia> ] activate docs
+
+julia> using LiveServer 
+
+julia> servedocs()
+```
+and the docs will be rendered and hosted locally at the url provided in the output.
+
 ## Use `DocumenterTools` to generate the keys
 
 ```julia
