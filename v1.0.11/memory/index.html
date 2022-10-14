@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tracking allocations · JuliaNotes.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="JuliaNotes.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">JuliaNotes.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../fastrepl/">Cool and fast REPL</a></li><li><a class="tocitem" href="../workflow/">Development workflow</a></li><li><a class="tocitem" href="../modules/">Modules and Revise</a></li><li><a class="tocitem" href="../loopscopes/">Scope of loops</a></li><li><a class="tocitem" href="../benchmark/">Benchmark</a></li><li><a class="tocitem" href="../assignment/">Assignment and mutation</a></li><li><a class="tocitem" href="../instability/">Type instability</a></li><li><a class="tocitem" href="../anonymous/">Anonymous functions</a></li><li class="is-active"><a class="tocitem" href>Tracking allocations</a><ul class="internal"><li><a class="tocitem" href="#Manually"><span>Manually</span></a></li><li><a class="tocitem" href="#Using-TimerOutputs"><span>Using TimerOutputs</span></a></li><li><a class="tocitem" href="#Using-the-Profiler"><span>Using the Profiler</span></a></li></ul></li><li><a class="tocitem" href="../immutable/">Immutable variables</a></li><li><a class="tocitem" href="../nomethod/">ERROR: No method...</a></li><li><a class="tocitem" href="../typevariance/">Vector{Int} &lt;: Vector{Real} is false???</a></li><li><a class="tocitem" href="../figures/">Figures and LaTeX</a></li><li><a class="tocitem" href="../new_package/">Create new package</a></li><li><a class="tocitem" href="../publish_docs/">Publish Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Tracking allocations</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tracking allocations</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/m3g/JuliaNotes.jl/blob/main/docs/src/memory.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Tracking-memory-allocations"><a class="docs-heading-anchor" href="#Tracking-memory-allocations">Tracking memory allocations</a><a id="Tracking-memory-allocations-1"></a><a class="docs-heading-anchor-permalink" href="#Tracking-memory-allocations" title="Permalink"></a></h1><h2 id="Manually"><a class="docs-heading-anchor" href="#Manually">Manually</a><a id="Manually-1"></a><a class="docs-heading-anchor-permalink" href="#Manually" title="Permalink"></a></h2><p>A quick way to test allocations is to use the <code>@allocated</code> macro, which  is available in <code>Base</code> Julia. For example:</p><pre><code class="language-julia hljs">a = @allocated begin
+    Block to test
+end; if a &gt; 0 println(a) end</code></pre><p>That will print something if the code block allocated something.</p><h2 id="Using-TimerOutputs"><a class="docs-heading-anchor" href="#Using-TimerOutputs">Using TimerOutputs</a><a id="Using-TimerOutputs-1"></a><a class="docs-heading-anchor-permalink" href="#Using-TimerOutputs" title="Permalink"></a></h2><p>One practical tool is <a href="https://github.com/KristofferC/TimerOutputs.jl">TimerOutputs</a>. Install it as usual, and use it with, for example:</p><pre><code class="language-julia hljs">using TimerOutputs
+const tmr = TimerOutput();</code></pre><p>In the code, flag the code lines or blocks with the <code>@timeit</code> macro. For example:</p><pre><code class="language-julia hljs">struct A
+  x
+end
+function test(n,x)
+  @timeit tmr &quot;set y&quot; y = Vector{A}(undef,n)
+  @timeit tmr &quot;loop&quot; for i in 1:n
+    @timeit tmr &quot;assign y&quot; y[i] = A(i*x)
+  end
+  y
+end</code></pre><p>Running this function fills the <code>tmr</code> object with the time and allocation results:</p><pre><code class="language-julia-repl hljs">julia&gt; test(10,rand());
+
+julia&gt; tmr
+ ─────────────────────────────────────────────────────────────────────
+                              Time                   Allocations      
+                      ──────────────────────   ───────────────────────
+   Tot / % measured:        176s / 0.00%            103MiB / 0.00%    
+
+ Section      ncalls     time   %tot     avg     alloc   %tot      avg
+ ─────────────────────────────────────────────────────────────────────
+ loop              2   8.34μs  72.6%  4.17μs   1.14KiB  78.5%     584B
+   assign y       20   3.18μs  27.7%   159ns      320B  21.5%    16.0B
+ set y             2   3.15μs  27.4%  1.58μs      320B  21.5%     160B
+ ─────────────────────────────────────────────────────────────────────</code></pre><p><a href="https://discourse.julialang.org/t/track-memory-allocation-not-working-correctly/57543/6">However</a>, <code>@timeit</code> causes some allocations on its own. Therefore, nested calls can cause confusion. This can be verified in the example above. Removing the <code>&quot;assign y&quot;</code> check inside the loop results in:</p><pre><code class="language-julia hljs"> ──────────────────────────────────────────────────────────────────
+                           Time                   Allocations      
+                   ──────────────────────   ───────────────────────
+ Tot / % measured:      9.74s / 0.00%           6.00MiB / 0.01%    
+
+ Section   ncalls     time   %tot     avg     alloc   %tot      avg
+ ──────────────────────────────────────────────────────────────────
+ set y          1   1.29μs  80.6%  1.29μs      160B  50.0%     160B
+ loop           1    311ns  19.4%   311ns      160B  50.0%     160B
+ ──────────────────────────────────────────────────────────────────</code></pre><p>Note that now the loop allocates less. Also, this result is consitent now with the <code>Profile</code> result shown below.</p><h2 id="Using-the-Profiler"><a class="docs-heading-anchor" href="#Using-the-Profiler">Using the Profiler</a><a id="Using-the-Profiler-1"></a><a class="docs-heading-anchor-permalink" href="#Using-the-Profiler" title="Permalink"></a></h2><p>To track allocations along the complete code, it is possible to use a profiler, although this generates so much information that it is somewhat confusing. <a href="https://discourse.julialang.org/t/track-memory-allocation-not-working-correctly/57543">Sometimes</a> the output is not clear either, perhaps even wrong. </p><p>For example, consider this is the code (file name here: test.jl):</p><pre><code class="language-julia hljs">struct A
+  x
+end
+
+function test(n,x)
+  y = Vector{A}(undef,n)
+  for i in 1:n
+    y[i] = A(i*x)
+  end
+  y
+end
+</code></pre><p>Run julia with:</p><pre><code class="nohighlight hljs">julia --track-allocation=user</code></pre><p>Within Julia, do:</p><pre><code class="language-julia hljs">julia&gt; using Profile
+
+julia&gt; include(&quot;./test.jl&quot;)
+test (generic function with 1 method)
+
+julia&gt; test(10,rand()); # gets compiled
+
+julia&gt; Profile.clear_malloc_data() # clear allocations
+
+julia&gt; test(10,rand());
+</code></pre><p>Exit Julia, this will generate a file <code>test.jl.XXX.mem</code> (extension <code>.mem</code>), which, in this case, contains:</p><pre><code class="language-julia hljs">        -
+        - struct A
+        -   x
+        - end
+        -
+        - function test(n,x)
+      160   y = Vector{A}(undef,n)
+        0   for i in 1:n
+      160     y[i] = A(i*x)
+        -   end
+        0   y
+        - end
+</code></pre><p>Where the lines with non-zero numbers are the lines where allocations occur.</p><p>More information: <a href="https://discourse.julialang.org/t/disabling-allocations/51028/4">Disabling allocations</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../anonymous/">« Anonymous functions</a><a class="docs-footer-nextpage" href="../immutable/">Immutable variables »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Friday 14 October 2022 20:45">Friday 14 October 2022</span>. Using Julia version 1.8.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
