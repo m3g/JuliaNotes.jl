@@ -46,7 +46,7 @@ Be careful in allowing `Write permissions`. The second key has to be copied to:
 
 with the name `DOCUMENTER_KEY`.
 
-## Add the GithubActions (cy.yml) workflow file
+## Add the GithubActions (ci.yml) workflow file
 
 Create, in your project, a file 
 ```
