@@ -92,7 +92,7 @@ In the GitHub repository, do:
 Settings -> GitHub Pages -> choose gh-pages (/root)
 ```
 
-(that is, go to Seetings, scroll down, on the GitHub pages section, choose the `gh-pages` banch to deploy your page).
+(that is, go to Settings, scroll down, on the GitHub pages section, choose the `gh-pages` branch to deploy your page).
 
 After the end of the CI run, if no error was detected, the site should be published.
 

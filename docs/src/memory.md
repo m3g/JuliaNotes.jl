@@ -70,7 +70,7 @@ julia> tmr
  loop           1    311ns  19.4%   311ns      160B  50.0%     160B
  ──────────────────────────────────────────────────────────────────
 ```
-Note that now the loop allocates less. Also, this result is consitent now with the `Profile` result shown below.
+Note that now the loop allocates less. Also, this result is consistent now with the `Profile` result shown below.
 
 ## Using the Profiler
 

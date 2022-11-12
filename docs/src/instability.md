@@ -1,7 +1,7 @@
 
 # Type instability and performance
 
-To obtaina a peformant code it is important that the types of the variables can be inferred by the compiler. If a variable can change type in an unpredictable manner, we say that there is a *type instability*.
+To obtain a performant code it is important that the types of the variables can be inferred by the compiler. If a variable can change type in an unpredictable manner, we say that there is a *type instability*.
 
 Type instabilities generally occur when we try to use global variables inside functions, that is, without passing these variables as parameters to the functions. Lets explain that. 
 

@@ -80,7 +80,7 @@ ERROR: BoundsError: attempt to access 2-element Array{Int64,1} at index [3]
 
 ```
 
-Therefore, this function cannot be executed twice in a row without redefinding the vector `n` with `n[1]=1`. This creates a difficulty for running bechmarks:
+Therefore, this function cannot be executed twice in a row without redefining the vector `n` with `n[1]=1`. This creates a difficulty for running benchmarks:
 
 ```julia-repl
 julia> n = [1];
