@@ -28,4 +28,4 @@ git push --set-upstream origin main
 ```
 (`main` was `master` in older github repositories)
 
-(From: [this thread](https://discourse.julialang.org/t/upload-new-package-to-github/56783/14))
+(From: [this thread](https://discourse.julialang.org/t/upload-new-package-to-github/56783/14)). Another useful post, with some additional information on how to create the package using the Github Desktop, is available [here](https://discourse.julialang.org/t/trouble-publishing-my-first-package-to-github/93293/5?u=lmiq). 
