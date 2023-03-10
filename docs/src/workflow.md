@@ -1,73 +1,105 @@
-# Workflows for developing effectivelly in Julia
+# Nice workflows for using and developing Julia 1.9+
 
-Variables can be associated to different values any time:
+This a brief description of some nice development workflows for Julia, particularly for versions 1.9 or greater. This workflows are usually fairly personal, so many other useful ones may exist. 
 
-```julia
-data = [ 1, 2, 3 ]
-f(data)
-data = [ 2, 3, 4 ]
-f(data)
+## juliaup
+
+The [juliaup](https://github.com/JuliaLang/juliaup) tool alows an easy handling of Julia instalations and versioning. In short, if you are using Linux, install `juliaup` with:
+```bash
+curl -fsSL https://install.julialang.org | sh
+```
+then, close the terminal, start it again. The `juliaup` and `julia` executables will be available in your path. By default, `juliaup` installs the latest stable version of Julia, which as of the writting of this text was 1.8.5. We want to work with the upcoming 1.9 series, so we start by installing it:
+```bash
+juliaup add 1.9
+```bash
+which will currently install, as of today, the 1.9.0-rc1 version of Julia. Then, lets make it the default Julia:
+```bash
+juliaup default 1.9
 ```
 
-Assuming that the data is constant, you could very directly just load a script repeatedly with the analysis and plotting/report functions, as you fiddle with the analysis functions, something as:
+## Revise and startup.jl
 
-```julia
-include("set_data.jl")
-include("analyze.jl")
-include("report.jl")
-#--- change something in "analyze.jl"
-include("analyze.jl")
-include("report.jl")
+`Revise.jl` is a fundamental tool for Julia development and use. It allows one to track changes to files and, thus, to very effectively develop new functions, tune plots, etc, by editing an script in parallel to an active Julia section. Thus, add revise to your main environment:
+```julia-repl
+julia> ] add Revise
 ```
-where the `analyze.jl` and `report.jl` files include both the functions and the call to those functions using the data variables. I use that frequently for fast exploration of code.
+(remembering that the `]` will take you to the package manager prompt: `(@v1.9) pkg>`).
 
-When things get more complicated, you probably want to use `Revise` (or even before things get complicated). With `Revise` you can include your script once, and the changes will be tracked automatically. In that case, the call to the functions should be done at the REPL (not included in the scripts). Something like:
-
-
+Next, let us guarantee that `Revise` is always loaded on startup. Add it to (or create the file) 
+```
+~/.julia/config/startup.j
+```
+and to it the line
 ```julia
 using Revise
-include("set_data.jl")
-includet("analyze.jl") # note the "t", for track
-includet("report.jl") 
-
-result = analyze(data)
-report(result)
-
-# Modifity the functions inside analyze.jl and report.jl
-# new run will be automatically with the new versions:
-
-result = analyze(data)
-report(result)
 ```
+which will make `Revise` to be loaded on each Julia startup. 
 
-Some people just use `Revise` by default. And `Revise` goes well with modules, in which case, if you had defined a module `MyModule` in a file `MyModule.jl`, with the functions of `analyze.jl` and `report.jl`, such as
+#### Why Revise
+
+With Revise loaded, it is possible to edit/develop scripts simply modifying the script and re-runing functions in an open Julia section. For example, given the script that 
+generates some data and then plots it:
 
 ```julia
-module MyModule
-  include("analyze.jl")
-  include("report.jl")
-  export analyze, report
+using Plots
+function my_data(n)
+    data = randn(n)
+    return data
+end
+function my_plot(data)
+    plt = plot(data; label="My data"; linewidth=1)
+    return plt
 end
 ```
 
-Load it with
+If we save the script in a `myplot.jl` file, and within Julia, we `includet` (note the `t`! - for "track"):
+```julia-repl
+julia> includet("./myplot.jl")
 
-```julia
-using Revise
-using MyModule # if you are in the folder where "MyModule.jl" is*
+julia> data = my_data(1000);
+
+julia> my_plot(data)
+```
+we generate the plot. Then, without leaving the Julia REPL, we can change any property of the data or the plot in the script, save the file, and re-run the functions changed, and they will reflect automatically the updates to the file. 
+
+The video below illustrates such a feature, by changing the line width of the plot, and executing again the `my_plot` function. 
+(from within VSCode, which is also a recomended tool for an efective workflow, but is not required here nor will be discussed in this text).
+
+```@raw html
+<center>
+<iframe width="500" style="height:315px" src="https://www.youtube.com/embed/GeldXJ-cgHM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
 ```
 
-You will be able to modify the functions inside those files and they will be always be automatically updated at every new call in the REPL. 
+!!! note
+    The example above illustrates some advantages of splitting Julia code into functions. With that layout, the function `my_plot` can be repeadedly executed
+    at the REPL, tracking the changes made on the file. The same could be done with the data-generation function, for example, if the data has to be reloaded
+    from different files, for example. Note, additionally, that it is good to structure Julia code in functions for performance reasons (functions get compiled
+    to efficient native code), although in this example that is a essentially irrelevant. 
 
-These options do not work if you redefine a constant, such as a struct or try to redefine a function as a variable.  Then you have to restart over. I usually keep also a script which just runs the above commands to restart the developing section when that is needed, starting julia with `julia -i devel.jl`.
+## Environments
 
-\*If you want to load the module from other folder, you need to add that folder to the `LOAD_PATH`, with:
+Julia 1.9 makes it particularly appealing to use environments for specific tasks, because the compiled code of the libraries gets stored in a environment-specific manner, making the load times of the libraries quicker than in previous Julia versions. Besides, the use of environments allows one to obtain completely reproducible setups. Let us take the previous script, 
+but we will load another large package `DataFrames`, and use it to store the sample data we are creating:
 
 ```julia
- push!(LOAD_PATH,"/path/to/MyModule")
+using Plots
+using DataFrames
+function my_data(n)
+    data = DataFrame(:x => randn(n))
+    return data
+end
+function my_plot(data)
+    plt = plot(data.x; label="My data", linewidth=1)
+    return plt
+end
 ```
 
+Since `Plots` and `DataFrames`
 
-Further discussion on this topic: 
-[Julia REPL flow coming from Matlab](https://discourse.julialang.org/t/julia-repl-flow-coming-from-matlab/50499/1)
+
+  11 dependencies successfully precompiled in 70 seconds. 133 already precompiled.
+
+
+
 
