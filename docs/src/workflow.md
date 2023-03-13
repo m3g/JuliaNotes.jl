@@ -179,9 +179,9 @@ Thus, in a few seconds, the script can be completely run, avoiding usual delays 
 
 Now, let us automate the activation of the environment, by adding to the top of the script the following first line:
 ```julia
-import Pkg; Pkg.activate("/home/user/.JuliaEnvironments/mydataplots")
+import Pkg; Pkg.activate("/home/user/.JuliaEnvironments/mydataplots") # added line
 using Plots
-...
+... # script continues
 ```
 
 Now, when including the script, it will automatically activate that environment, and use the packages installed for it. It is even possible to just execute the script from the command-line with an acceptable performance, where the script now, shown below, contains the execution of the functions and saving the plot to a figure:
