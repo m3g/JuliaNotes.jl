@@ -97,6 +97,8 @@ function my_plot(data)
 end
 ```
 
+#### Creating and installing packages
+
 Since `Plots` and `DataFrames` are relatively heavy packages, they take a while to install and compile. We will do that within an new environment. First, create a directory that will contain the environment files. We choose to save the environments within a `~/.JuliaEnvironments` directory, but that is completely optional, environments are stored in regular directories:
 ```bash
 mkdir ~/.JuliaEnvironments 
@@ -129,7 +131,11 @@ julia> using Plots, DataFrames
 which may also take some time (it it well possible that the packages don't get precompiled, again, on this first `using`, but sometimes they are because
 of dependency version updates).
 
-That's all. You can quite Julia, and let us move to the directory of the working script:
+That's all for the installation part.
+
+#### Using the environment
+
+You can quit Julia, and let us move to the directory of the working script:
 ```bash
 cd ~/Documents/mytestscript
 ```
@@ -176,6 +182,8 @@ julia> @time my_plot(data)
   0.635311 seconds (2.83 M allocations: 172.703 MiB, 9.92% gc time, 99.49% compilation time: 72% of which was recompilation)
 ```
 Thus, in a few seconds, the script can be completely run, avoiding usual delays of recompilation of the packages involved, which happened often in previous versions of Julia.
+
+#### Automatic activation
 
 Now, let us automate the activation of the environment, by adding to the top of the script the following first line:
 ```julia
