@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Type instability · JuliaNotes.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="JuliaNotes.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">JuliaNotes.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../fastrepl/">Cool and fast REPL</a></li><li><a class="tocitem" href="../workflow/">Development workflow</a></li><li><a class="tocitem" href="../modules/">Modules and Revise</a></li><li><a class="tocitem" href="../loopscopes/">Scope of loops</a></li><li><a class="tocitem" href="../benchmark/">Benchmark</a></li><li><a class="tocitem" href="../assignment/">Assignment and mutation</a></li><li class="is-active"><a class="tocitem" href>Type instability</a></li><li><a class="tocitem" href="../anonymous/">Anonymous functions</a></li><li><a class="tocitem" href="../memory/">Tracking allocations</a></li><li><a class="tocitem" href="../immutable/">Immutable variables</a></li><li><a class="tocitem" href="../nomethod/">ERROR: No method...</a></li><li><a class="tocitem" href="../typevariance/">Vector{Int} &lt;: Vector{Real} is false???</a></li><li><a class="tocitem" href="../figures/">Figures and LaTeX</a></li><li><a class="tocitem" href="../new_package/">Create new package</a></li><li><a class="tocitem" href="../publish_docs/">Publish Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Type instability</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Type instability</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/m3g/JuliaNotes.jl/blob/main/docs/src/instability.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Type-instability-and-performance"><a class="docs-heading-anchor" href="#Type-instability-and-performance">Type instability and performance</a><a id="Type-instability-and-performance-1"></a><a class="docs-heading-anchor-permalink" href="#Type-instability-and-performance" title="Permalink"></a></h1><p>To obtain a performant code it is important that the types of the variables can be inferred by the compiler. If a variable can change type in an unpredictable manner, we say that there is a <em>type instability</em>.</p><p>Type instabilities generally occur when we try to use global variables inside functions, that is, without passing these variables as parameters to the functions. Lets explain that. </p><p>A global variable is anything defined in the <em>global scope</em>, that is outside any function or other structure that defines a scope (<code>let</code> blocks, for example). We obtain a global variable when writing, in the REPL, </p><pre><code class="language-julia-repl hljs">julia&gt; x = 5. </code></pre><p>or when we write in a script the same thing:</p><pre><code class="nohighlight hljs">more script.jl</code></pre><pre><code class="language-julia hljs">x = 5.</code></pre><p>A variable defined in this way is type unstable because you can change its value at any time to anything. For example,</p><pre><code class="language-julia-repl hljs">julia&gt; x = 5.
+5.0
+
+julia&gt; x = &quot;ABC&quot;
+&quot;ABC&quot;
+</code></pre><p>Now, we will define a function that uses the value of <code>x</code> without passing <code>x</code> as a parameter. This function will sum up the elements of <code>x</code>:</p><pre><code class="language-julia-repl hljs">julia&gt; function f()
+          s = 0
+          for val in x
+            s = s + val
+          end
+          return s
+       end
+f (generic function with 1 method)
+</code></pre><p>This function cannot be specialized for the type of variable that <code>x</code> is, because, as we have mentioned, <code>x</code> could be any type of variable.  This problem can be tracked with the macro <code>@code_warntype</code>: </p><pre><code class="language-julia-repl hljs">julia&gt; @code_warntype f()
+Variables
+  #self#::Core.Compiler.Const(f, false)
+  s::Any
+  @_3::Any
+  val::Any
+
+Body::Any
+1 ─       (s = 0.0)
+│   %2  = Main.x::Any
+│         (@_3 = Base.iterate(%2))
+│   %4  = (@_3 === nothing)::Bool
+│   %5  = Base.not_int(%4)::Bool
+└──       goto #4 if not %5
+2 ┄ %7  = @_3::Any
+│         (val = Core.getfield(%7, 1))
+│   %9  = Core.getfield(%7, 2)::Any
+│         (s = s + val)
+│         (@_3 = Base.iterate(%2, %9))
+│   %12 = (@_3 === nothing)::Bool
+│   %13 = Base.not_int(%12)::Bool
+└──       goto #4 if not %13
+3 ─       goto #2
+4 ┄       return s
+
+</code></pre><p>Note that there are many <code>Any</code> in the code above, which will be highlighted in red if you run these commands in your REPL. That indicates that something is not quite right. In particular, note the line <code>Body::Any</code>: it indicates that the result of the body of that function can be of any type, in principle.    </p><p>Let us check how this function performs. We will define <code>x</code> as a vector of many components such that the time of <code>f(x)</code> is measured accurately:</p><pre><code class="language-julia-repl hljs">julia&gt; x = rand(1000);
+
+julia&gt; @btime f()
+  60.148 μs (3490 allocations: 70.16 KiB)
+492.360646736646
+</code></pre><p>Now, we will define a new function that receives <code>x</code> as a parameter, and besides that does exactly the same thing:</p><pre><code class="language-julia-repl hljs">julia&gt; function g(x)
+         s = zero(eltype(x))
+         for val in x
+           s = s + val
+         end
+         return s
+       end
+</code></pre><p>In this example we were obsessive by initializing <code>s</code> as <code>zero(eltype(x))</code>, which indicates that <code>s</code> is a zero of the same type of the elements of <code>x</code>. That is, if <code>x</code> is a vector of integer numbers, <code>s</code> will be <code>0</code> (integer), and if <code>x</code> is a vector of real numbers, <code>s</code> will be <code>0.</code> (real). This is not fundamental for the performance here tested, but it will eliminate all possible types of instability of the variables within that code.  </p><p>Now, if we call <code>g(x)</code> with a <code>x</code> of a specific type, that will create a <code>method</code> of that function specialized for this type of variable. For example, if we call <code>g</code> with the number <code>1</code>, which is an integer number, all operations in <code>g</code> will be performed with integers:</p><pre><code class="language-julia-repl hljs">julia&gt; @code_warntype g(1)
+Variables
+  #self#::Core.Compiler.Const(g, false)
+  x::Int64
+  s::Int64
+  @_4::Union{Nothing, Tuple{Int64,Nothing}}
+  val::Int64
+
+Body::Int64
+1 ─       (s = 0)
+│   %2  = x::Int64
+│         (@_4 = Base.iterate(%2))
+│   %4  = (@_4::Tuple{Int64,Nothing} === nothing)::Core.Compiler.Const(false, false)
+│   %5  = Base.not_int(%4)::Core.Compiler.Const(true, false)
+└──       goto #4 if not %5
+2 ─ %7  = @_4::Tuple{Int64,Nothing}::Tuple{Int64,Nothing}
+│         (val = Core.getfield(%7, 1))
+│   %9  = Core.getfield(%7, 2)::Core.Compiler.Const(nothing, false)
+│         (s = s::Core.Compiler.Const(0, false) + val)
+│         (@_4 = Base.iterate(%2, %9))
+│   %12 = (@_4::Core.Compiler.Const(nothing, false) === nothing)::Core.Compiler.Const(true, false)
+│   %13 = Base.not_int(%12)::Core.Compiler.Const(false, false)
+└──       goto #4 if not %13
+3 ─       Core.Compiler.Const(:(goto %7), false)
+4 ┄       return s
+</code></pre><p>Note that there is no <code>Any</code> remaiing in the above code and that, in particular, the result of the body of the code is guaranteed to be an integer <code>Body::Int64</code>. </p><p>If we call the same function with the number <code>3.14</code>, which is real, another method is generated:</p><pre><code class="language-julia-repl hljs">julia&gt; @code_warntype g(3.14)
+Variables
+  #self#::Core.Compiler.Const(g, false)
+  x::Float64
+  s::Float64
+  @_4::Union{Nothing, Tuple{Float64,Nothing}}
+  val::Float64
+
+Body::Float64
+1 ─       (s = 0)
+│   %2  = x::Float64
+│         (@_4 = Base.iterate(%2))
+│   %4  = (@_4::Tuple{Float64,Nothing} === nothing)::Core.Compiler.Const(false, false)
+│   %5  = Base.not_int(%4)::Core.Compiler.Const(true, false)
+└──       goto #4 if not %5
+2 ─ %7  = @_4::Tuple{Float64,Nothing}::Tuple{Float64,Nothing}
+│         (val = Core.getfield(%7, 1))
+│   %9  = Core.getfield(%7, 2)::Core.Compiler.Const(nothing, false)
+│         (s = s::Core.Compiler.Const(0, false) + val)
+│         (@_4 = Base.iterate(%2, %9))
+│   %12 = (@_4::Core.Compiler.Const(nothing, false) === nothing)::Core.Compiler.Const(true, false)
+│   %13 = Base.not_int(%12)::Core.Compiler.Const(false, false)
+└──       goto #4 if not %13
+3 ─       Core.Compiler.Const(:(goto %7), false)
+4 ┄       return s::Float64
+</code></pre><p>Now all types of the function are <code>Float64</code> and the function is guaranteed to return that type of number.</p><p>This specialization was not possible when <code>x</code> was not a parameter of the function, because the <em>method</em> had to deal with any type of variables.</p><p>How the performance of these methods compare with the previous implementation that had type instabilities? Let us see:</p><pre><code class="language-julia-repl hljs">julia&gt; x = rand(1000);
+
+julia&gt; @btime f()
+  59.518 μs (3490 allocations: 70.16 KiB)
+504.23960342930764
+
+julia&gt; @btime g($x)
+  965.300 ns (0 allocations: 0 bytes)
+504.23960342930764
+</code></pre><p>The function <code>g</code> is about 60 times faster than <code>f</code> and, furthermore, does not allocate any memory. </p><p>To guarantee that function are type-stable, therefore, is one of the most important things in the generation of fast code.</p><p>Global variables, therefore, must be avoided inside functions. They must be passed as parameters such that specialized methods can be built. </p><p>Sometimes, however, the values are constants. For example, <span>$\pi$</span>. It would be strange to have to pass <span>$\pi$</span> as a parameter to every function that uses it. Thus, <span>$\pi$</span> is a constant-global, and being a constant it does not introduce type-instabilities. Custom constant global are defined with the <code>const</code> keyword, and solve the performance issue of the function <code>f</code> above.</p><pre><code class="language-julia hljs">julia&gt; const x = rand(1000);
+
+julia&gt; @btime f()
+  963.300 ns (0 allocations: 0 bytes)
+504.11877716593017
+</code></pre><p>Yet, in this case calling the variable <code>x</code> a constant is artificial, and in this particular case the function <code>f</code> only computes the sum of the elements of that particular <code>x</code> from now on. Thus, it is much more reasonable to pass <code>x</code> as a parameter, and let the constants be used for actual constant values, as <span>$\pi$</span>.         </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../assignment/">« Assignment and mutation</a><a class="docs-footer-nextpage" href="../anonymous/">Anonymous functions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Monday 13 March 2023 17:31">Monday 13 March 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
