@@ -27,7 +27,7 @@ julia> ] add Revise
 
 Next, let us guarantee that `Revise` is always loaded on startup. Add it to (or create the file) 
 ```
-~/.julia/config/startup.j
+~/.julia/config/startup.jl
 ```
 and to it the line
 ```julia
@@ -128,7 +128,7 @@ julia> using Plots, DataFrames
 [ Info: Precompiling DataFrames [a93c6f00-e57d-5684-b7b6-d8193f3e46c0]
 
 ```
-which may also take some time (it it well possible that the packages don't get precompiled, again, on this first `using`, but sometimes they are because
+which may also take some time (it is well possible that the packages don't get precompiled again, on this first `using`, but sometimes they are because
 of dependency version updates).
 
 That's all for the installation part.
@@ -192,7 +192,7 @@ using Plots
 ... # script continues
 ```
 
-Now, when including the script, it will automatically activate that environment, and use the packages installed for it. It is even possible to just execute the script from the command-line with an acceptable performance, where the script now, shown below, contains the execution of the functions and saving the plot to a figure:
+Now, when including the script, it will automatically activate that environment, and use the packages installed for it. It is even possible to just execute the script from the command-line with an acceptable performance. The script, shown below, now contains the execution of the functions and saving the plot to a figure:
 ```bash
 user@m3g:~/Documents/mytestscript% time julia myscript.jl 
   Activating project at `~/.JuliaEnvironments/mydataplots`
@@ -201,7 +201,7 @@ real	0m5,172s
 ...
 ```
 
-The complete script is, now:
+The complete script is:
 ```julia
 import Pkg; Pkg.activate("/home/user/.JuliaEnvironments/mydataplots")
 using Plots
