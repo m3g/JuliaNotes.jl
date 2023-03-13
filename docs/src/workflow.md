@@ -66,7 +66,7 @@ The video below illustrates such a feature, by changing the line width of the pl
 
 ```@raw html
 <center>
-<iframe width="500" style="height:315px" src="https://www.youtube.com/embed/GeldXJ-cgHM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="733" style="height:400px" src="https://www.youtube.com/embed/GeldXJ-cgHM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </center>
 ```
 
