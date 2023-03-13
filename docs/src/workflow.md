@@ -126,7 +126,8 @@ julia> using Plots, DataFrames
 [ Info: Precompiling DataFrames [a93c6f00-e57d-5684-b7b6-d8193f3e46c0]
 
 ```
-which may also take some time.
+which may also take some time (it it well possible that the packages don't get precompiled, again, on this first `using`, but sometimes they are because
+of dependency version updates).
 
 That's all. You can quite Julia, and let us move to the directory of the working script:
 ```bash
