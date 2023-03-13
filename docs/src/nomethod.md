@@ -8,7 +8,6 @@ For example, if we define the following function:
 ```julia-repl
 julia> f(x,y) = 2*x + y
 f (generic function with 1 method)
-
 ```
 
 We have a function that can receive different types of variables (such as scalar integers or floats, or vectors, etc.). This function will be specialized for each type of variables on input. The `@code_typed` macro displays what the codes becomes after the type-specialization of the variables. For example, with integers, we have:
@@ -20,7 +19,6 @@ CodeInfo(
 │   %2 = Base.add_int(%1, y)::Int64
 └──      return %2
 ) => Int64
-
 ```
 
 Note that the function calls `Base.mul_int` and `Base.add_int`, which are specialized functions to multiply and add integer numbers. 
@@ -35,7 +33,6 @@ CodeInfo(
 │   %3 = Base.add_float(%2, y)::Float64
 └──      return %3
 ) => Float64
-
 ```
 
 Therefore, the code of `f(x,y)` was specialized, at execution time, to different types of variables, and will produce fast compiled versions of the code in each case. 

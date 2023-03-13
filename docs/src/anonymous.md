@@ -1,6 +1,6 @@
-# Anonymous functions
+# Anonymous functions and closures
 
-Anonymous are an important part of the Julia syntax, and permeate many of the codes in Julia.
+Anonymous functions and closures are an important part of the Julia syntax.
 
 For example, a simple example of the frequent use of anonymous functions is on calls to the `findfirst` function, which returns the element of an array which first matches a condition:
 
@@ -18,30 +18,28 @@ julia> findfirst( x -> sin(x) > 0.5, x )
 
 The `x -> sin(x) > 0.5` is an anonymous function, which one can read as "given `x` return `sin(x) > 0.5`", which in this case can be `true` or `false`. 
 
-## Basic syntax
+## Basic syntax and closures
 
 Consider the following function:
 ```julia
 a = 5
 f(x,a) = a*x
 ```
-An anonymous function which, given `x`, returns the result of `f(x,a)`, is written as
+This function is also a "closure", because it "closes over" the variable `a`. Be careful, if written in global scope, this `a` is type-unstable, unless if declared `const`.
 
+We can define an anonymous function which, given `x`, returns the result of `f(x,a)`:
 ```julia
 x -> f(x,a) 
 ```
-
-The anonymous function can be bound to a variable,
+The anonymous function can be bound to a label name, as any other value:
 ```julia
 g = x -> f(x,a)
 ```
-
 and `g` will be a function that, given `x`, returns `f(x,a)`. This definition is similar to
 
 ```julia
 g(x) = f(x,a)
 ```
-
 Except that in the latter case the label `g` is bound to the function in definitive:
 
 ```julia-repl
@@ -53,7 +51,6 @@ ERROR: invalid redefinition of constant g
 ```
 
 While in the former case `g` can be redefined at will, as it is only a label bound to the address of an anonymous function:
-
 ```julia-repl
 julia> g = x -> f(x,a)
 #1 (generic function with 1 method)
@@ -62,9 +59,8 @@ julia> g = 2
 2
 ```
 
-Anonymous functions for functions with multiple parameters can also be defined, with, for example,
-
-```
+Anonymous functions for functions with multiple parameters, and closing over multiple values can be defined likewise:
+```julia
 (x,y) -> f(x,y,a,b,c)
 ```
 
@@ -98,7 +94,7 @@ julia> function solver(f,x)
 solver (generic function with 1 method)
 ```
 
-Then, for example, let us define a function that depends on three constant parameters besides that the variable `x`:
+Then, let us define a function that depends on three constant parameters besides that the variable `x`:
 ```julia-repl
 julia> const a, b, c = 1, 2, 3; 
 
@@ -146,7 +142,7 @@ the call to the solver in a function that receives the data as parameters, in wh
 julia> a, b, c = 1, 2, 3; # not necessarily constant
 
 julia> function h(x,a,b,c) 
-         return solver(x -> a*x^2 + b*x + c,x)
+           return solver(x -> a*x^2 + b*x + c,x)
        end
 h (generic function with 1 method)
 
@@ -160,7 +156,7 @@ julia> h(x,a,b,c)
 
 # Take away
 
-Passing functions as argument to other functions, in particular if the evaluation of data is required, is practical with the use of anonymous functions.  This occurs very frequently in the context of calls to solvers, but very frequently also in the Julia base language, for example in the search and sorting, functions, among many others. One has to keep in mind that the closures are parsed at the calling scope, such that critical code for performance must always be wrapped into functions, to guarantee the constant types of the parameters. Let us just reinforce this point with an example.
+Passing functions as argument to other functions, in particular if the evaluation of data is required, is practical with the use of anonymous functions and closures.  This occurs very frequently in the context of calls to solvers, but very frequently also in the Julia base language, for example in the search and sorting, functions, among many others. One has to keep in mind that the closures are parsed at the calling scope, such that critical code for performance must always be wrapped into functions, to guarantee the constant types of the parameters. Let us just reinforce this point with an example.
 
 # Example of type-instability 
 

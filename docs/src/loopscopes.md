@@ -9,7 +9,7 @@ My perhaps didactic explanation on the choices made is below. I understand that 
   ```julia
   s = 0
   for i in 1:3
-    s = s + i
+      s = s + i
   end
   ```
   
@@ -21,8 +21,8 @@ My perhaps didactic explanation on the choices made is below. I understand that 
   ```julia-repl
   julia> s = 0
          for i in 1:3
-           global s
-           s = s + i
+             global s
+             s = s + i
          end
   ```
   However, this was inconvenient, because one was not able to copy and paste a code from a function to the REPL. Thus, since Julia 1.5, it was decided that at the REPL the code without the explicit `global s` declaration will work. The `s` variable is still global and the loop will not be efficient, but this in this context it is acceptable because nobody writes critical code directly to the REPL.

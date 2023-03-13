@@ -33,11 +33,11 @@ Now, we will define a function that uses the value of `x` without passing `x` as
 
 ```julia-repl
 julia> function f()
-          s = 0
-          for val in x
-            s = s + val
-          end
-          return s
+            s = 0
+            for val in x
+              s = s + val
+            end
+            return s
        end
 f (generic function with 1 method)
 
@@ -91,11 +91,11 @@ Now, we will define a new function that receives `x` as a parameter, and besides
 
 ```julia-repl
 julia> function g(x)
-         s = zero(eltype(x))
-         for val in x
-           s = s + val
-         end
-         return s
+           s = zero(eltype(x))
+           for val in x
+              s = s + val
+           end
+           return s
        end
 
 ```

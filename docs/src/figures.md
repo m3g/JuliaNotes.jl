@@ -13,16 +13,14 @@ Some other options, as `linewidth`, `framestyle`, are a matter of taste. Here I 
 ```julia
 using Plots
 using LaTeXStrings
-
 plot_font = "Computer Modern"
 default(
-  fontfamily=plot_font,
-  linewidth=2, 
-  framestyle=:box, 
-  label=nothing, 
-  grid=false
+    fontfamily=plot_font,
+    linewidth=2, 
+    framestyle=:box, 
+    label=nothing, 
+    grid=false
 )
-
 plot(sort(rand(10)),sort(rand(10)),label="Legend")
 plot!(xlabel=L"\textrm{Standard~text}(r) / \mathrm{cm^3}")
 plot!(ylabel="Same font as everything")
@@ -60,16 +58,14 @@ To control the margins, because sometimes depending on the font and figure sizes
 
 ```julia
 using Plots, Plots.Measures, LaTeXStrings
-
 plot_font = "Computer Modern"
 default(
-  fontfamily=plot_font,
-  linewidth=2, 
-  framestyle=:box, 
-  label=nothing, 
-  grid=false
+    fontfamily=plot_font,
+    linewidth=2, 
+    framestyle=:box, 
+    label=nothing, 
+    grid=false
 )
-
 scalefontsizes(1.5)
 plot(sort(rand(10)),sort(rand(10)),label="Legend")
 plot!(xlabel=L"\textrm{Standard~text}(r) / \mathrm{cm^3}")
@@ -86,7 +82,7 @@ will produce:
 ## Save as PDF, convert afterwards
 
 As a reasonable strategy, it is practical to save the plot to a pdf file, with 
-```
+```julia
 savefig("./plot.pdf")
 ```
 and convert it later to other formats (`png`, `tiff`, etc), with, for example GIMP. PDF are scalable vector graphics, thus the resolution will be defined only on the conversion step. Additionally, PDF viewers update the file when it is modified, thus one can tune the figure properties by changing the plot generation and viewing the PDF directly, which we will be sure will conform the final figure appearance.   

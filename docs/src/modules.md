@@ -16,8 +16,8 @@ Create a file with a function, for example: `f.jl`
 
 ```julia
 function f(x)
-  y = 2*x
-  return y
+    y = 2*x
+    return y
 end
 ```
 
@@ -27,8 +27,8 @@ Create a file called, for example, `MyModule.jl`, in which you define a module o
 
 ```julia
 module MyModule
-  export f
-  include("./f.jl")  
+    export f
+    include("./f.jl")  
 end
 ```
 

@@ -9,7 +9,7 @@ is available in `Base` Julia. For example:
 ```julia
 a = @allocated begin
     Block to test
-end; if a > 0 println(a) end
+end; a > 0 && @show a
 ```
 That will print something if the code block allocated something.
 
@@ -30,11 +30,11 @@ struct A
   x
 end
 function test(n,x)
-  @timeit tmr "set y" y = Vector{A}(undef,n)
-  @timeit tmr "loop" for i in 1:n
-    @timeit tmr "assign y" y[i] = A(i*x)
-  end
-  y
+    @timeit tmr "set y" y = Vector{A}(undef,n)
+    @timeit tmr "loop" for i in 1:n
+        @timeit tmr "assign y" y[i] = A(i*x)
+    end
+    y
 end
 ```
 
@@ -80,17 +80,16 @@ For example, consider this is the code (file name here: test.jl):
 
 ```julia
 struct A
-  x
+    x
 end
 
 function test(n,x)
-  y = Vector{A}(undef,n)
-  for i in 1:n
-    y[i] = A(i*x)
-  end
-  y
+    y = Vector{A}(undef,n)
+    for i in 1:n
+        y[i] = A(i*x)
+    end
+    y
 end
-
 ```
 
 Run julia with:
@@ -111,23 +110,21 @@ julia> test(10,rand()); # gets compiled
 julia> Profile.clear_malloc_data() # clear allocations
 
 julia> test(10,rand());
-
 ```
 
 Exit Julia, this will generate a file `test.jl.XXX.mem` (extension `.mem`), which, in this case, contains:
 
 ```julia
-        -
         - struct A
-        -   x
+        -     x
         - end
         -
         - function test(n,x)
-      160   y = Vector{A}(undef,n)
-        0   for i in 1:n
-      160     y[i] = A(i*x)
-        -   end
-        0   y
+      160     y = Vector{A}(undef,n)
+        0     for i in 1:n
+      160       y[i] = A(i*x)
+        -     end
+        0     y
         - end
 
 ```
