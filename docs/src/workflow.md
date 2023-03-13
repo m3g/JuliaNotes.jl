@@ -4,7 +4,7 @@ This a brief description of some nice development workflows for Julia, particula
 
 ## juliaup
 
-The [juliaup](https://github.com/JuliaLang/juliaup) tool alows an easy handling of Julia instalations and versioning. In short, if you are using Linux, install `juliaup` with:
+The [juliaup](https://github.com/JuliaLang/juliaup) tool allows an easy handling of Julia installations and versioning. In short, if you are using Linux, install `juliaup` with:
 ```bash
 curl -fsSL https://install.julialang.org | sh
 ```
@@ -37,7 +37,7 @@ which will make `Revise` to be loaded on each Julia startup.
 
 #### Why Revise
 
-With Revise loaded, it is possible to edit/develop scripts simply modifying the script and re-runing functions in an open Julia section. For example, given the script that 
+With Revise loaded, it is possible to edit/develop scripts simply modifying the script and re-running functions in an open Julia section. For example, given the script that 
 generates some data and then plots it:
 
 ```julia
@@ -74,7 +74,7 @@ The video below illustrates such a feature, by changing the line width of the pl
     The video illustrates the use of Revise from within VSCode, which is also a recommended tool for an effective workflow, but is not required here nor will be discussed in this text. In any case, if you are using it, install the Julia extension.
 
 !!! note
-    The example above illustrates some advantages of splitting Julia code into functions. With that layout, the function `my_plot` can be repeadedly executed
+    The example above illustrates some advantages of splitting Julia code into functions. With that layout, the function `my_plot` can be repeatedly executed
     at the REPL, tracking the changes made on the file. The same could be done with the data-generation function, for example, if the data has to be reloaded
     from different files, for example. Note, additionally, that it is good to structure Julia code in functions for performance reasons (functions get compiled
     to efficient native code), although in this example that is a essentially irrelevant. 
@@ -138,7 +138,7 @@ Now start Julia, and activate the `mydataplots` environment, with:
 ```julia-repl
 julia> ] # go to pkg prompt
 
-(@v1.9) pkg> activate /home/leandro/.JuliaEnvironments/mydataplots/
+(@v1.9) pkg> activate /home/user/.JuliaEnvironments/mydataplots/
   Activating project at `~/.JuliaEnvironments/mydataplots`
 
 (mydataplots) pkg>
@@ -185,7 +185,7 @@ using Plots
 
 Now, when including the script, it will automatically activate that environment, and use the packages installed for it. It is even possible to just execute the script from the command-line with an acceptable performance, where the script now, shown below, contains the execution of the functions and saving the plot to a figure:
 ```bash
-leandro@m3g:~/Documents/mytestscript% time julia myscript.jl 
+user@m3g:~/Documents/mytestscript% time julia myscript.jl 
   Activating project at `~/.JuliaEnvironments/mydataplots`
 
 real	0m5,172s
@@ -194,7 +194,7 @@ real	0m5,172s
 
 The complete script is, now:
 ```julia
-import Pkg; Pkg.activate("/home/leandro/.JuliaEnvironments/mydataplots")
+import Pkg; Pkg.activate("/home/user/.JuliaEnvironments/mydataplots")
 using Plots
 using DataFrames
 function my_data(n)
