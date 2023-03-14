@@ -1,4 +1,104 @@
-# Immutable and mutable variables
+# Immutable, mutable and allocations 
+
+In Julia there are mutable and immutable values (variables), and this distinction and implications are not always obvious depending on the previous programming experience. 
+
+For instance, having past experience with Fortran, this distinction was a novelty for me. In Fortran one declares every variable, and at the moment of declaring one has the impresion of having reserved a place in the memory for that variable, even with scalar one does that. Along the Fortran code, when a different value is assigned to the label assigned to the variable, the value changes, and that can be quite simply interpreted as if the value stored in the memory position which was reserved for that variable changed. 
+
+In Julia (and many other higher-level languages, in particular), one has to understand the difference between mutable and imutable values. The reason, from a user perspective, derives from many features of high level languages. For instance, consider the code:
+```julia-repl
+julia> x = 1
+1
+
+julia> x = [1, 2]
+2-element Vector{Int64}:
+ 1
+ 2
+```
+
+In a statically typed language, `x` would assume the value of an `Int` in the first assignment, and one would not be able to assign that label, `x`, to a different type of value, a vector of integers, in this case. The flexibility of a dynamic language requires **labels**, like `x` here, be only that, labels assigned to values. Then, one has to understand the properties of the values, in this case either the integer number `1` or the vector `[1,2]`. 
+
+The number `1` is an immutable value. That is, we cannot convert it into something else. In some sense that's natural. What is less natural, then, a sequence of code like this:
+```julia
+x = 1
+x = 2
+```
+does not mean mutating the variable `x`, but simply assigning the label `x` to a different immutable value. The implications of this are important. For instance, consider the function `f` and its application below:
+```julia-repl
+julia> function f(x)
+           x = x + 1
+           return x
+       end;
+
+julia> x = 1
+1
+
+julia> f(x)
+2
+
+julia> x
+1
+```
+
+From the structure of the function, one would be tempted to interpret that `x` was mutated inside it, and thus that the value of `x` after the application of the function would have changed. It does not, though, and this can be confusing. In this case, the point is that what was passed to the function was the *value* `1`, an immutable value, and within `f` initially the label `x` was assigned to it. 
+
+Next, the label `x` was reassined, to the result of the value of the input `x` (`1`), plus one, and the *value* `2` was returned. The label `x` of the outer scope was simply unchanged, and continued to be assigned to the value `1`. 
+
+This is quite different from the following code snipet:
+```julia-repl
+julia> function g(x)
+           x[1] = 0
+           return x
+       end;
+
+julia> x = [1,2]
+2-element Vector{Int64}:
+ 1
+ 2
+
+julia> g(x)
+2-element Vector{Int64}:
+ 0
+ 2
+
+julia> x
+2-element Vector{Int64}:
+ 0
+ 2
+```
+The most fundamental difference here is that `x`, as a vector, is now a *mutable* value. That has an implication on how it is generally stored in the memory: it has an address. What is passed to the function is the address of the vector in memory. Inside `g` the vector is mutated, and the array is returned, meaning that its address in memory is returned. One can effectivelly assign a new label to the returned value:
+```julia-repl
+julia> x = [1,2];
+
+julia> y = g(x);
+
+julia> y
+2-element Vector{Int64}:
+ 0
+ 2
+
+julia> x
+2-element Vector{Int64}:
+ 0
+ 2
+
+julia> y === x
+true
+```
+with the last line confirming that `x` and `y` are just two different labels assigned to the exact same object. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 The mutable vs. immutable thing, from the perspective of a previous Fortran user: In Fortran everything seems to have its place in memory, as I said, and everything seems to be mutable, although that might not be true in practice. Thus, there is an abstraction layer there that must be overcome. I hope what I say in what follows is not too wrong. 
 
