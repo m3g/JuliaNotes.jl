@@ -19,7 +19,7 @@ makedocs(
         "Anonymous functions" => "anonymous.md",
         #"Union splitting" => "splitting.md",
         "Tracking allocations" => "memory.md",
-        "Immutable variables" => "immutable.md",
+        "Mutability" => "immutable.md",
         "ERROR: No method..." => "nomethod.md",
         "Vector{Int} <: Vector{Real} is false???" => "typevariance.md",
         "Figures and LaTeX" => "figures.md",
