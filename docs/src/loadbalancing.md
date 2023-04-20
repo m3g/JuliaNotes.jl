@@ -1,12 +1,14 @@
-# A small note on parallel load balancing and thread safety
+# A note on parallel load balancing  
 
 When running a parallel calculation, it is a good idea to divide the workload into chunks
 of known size. We have developed a simple package, [`ChunkSplitters.jl`](https://github.com/m3g/ChunkSplitters.jl) to perform such splitting. Here we make some considerations on why it should be used and how to cope with highly uneven parallel workloads. 
 
-To simulate a highly uneven workload, first we create a function that occupies the processor for a known amount of time given an input. Like a `sleep` function, but that actually does some work and doesn't let the processor free:
+## Using @threads and @spawn
+
+To simulate a highly uneven workload, first we create a function that occupies a processor for a known amount of time given an input. Like a `sleep` function, but that actually does some work and doesn't let the processor free:
 
 ```julia-repl
-julia> function sleep_for(time=1; cycles_for_one_second=4*10^7)
+julia> function work_for(;time=1, cycles_for_one_second=4*10^7)
            x = 0.0
            for i in 1:time*cycles_for_one_second
                x += abs(sin(log(i)))
@@ -14,126 +16,72 @@ julia> function sleep_for(time=1; cycles_for_one_second=4*10^7)
            return x
        end
 
-julia> @time sleep_for(0.5)
+julia> @time work_for(time=0.5)
   0.507590 seconds
 1.1355518913947988e7
 ```
 with that number of cycles the function takes roughly 1 second in my laptop if `time == 1`. By changing the input `time` we can now create very uneven workloads in a parallel run.
 
-For example, let us sum `N = 100` random numbers but introducing the call to `sleep_for` at each iteration:
+For example, let us sum `N = 120` random numbers but introducing the call to `work_for` at each iteration, with a time proportional to the index of the iteration (`time = i*dt`):
 
 ```julia-repl
 julia> using BenchmarkTools 
 
-julia> import Random: shuffle
-
-julia> function sum_N(;N=100)
-           tasks = shuffle(1:N)
+julia> function sum_N(;N=120, dt=0.001)
            s = 0
-           for i in tasks
-               sleep_for(i*0.001)
+           for i in 1:N
+               work_for(time=i*dt)
                s += rand()
            end
            return s
        end
 
 julia> @btime sum_N()
-  5.819 s (1 allocation: 896 bytes)
-50.60627901297448
+  8.144 s (0 allocations: 0 bytes)
+68.66902947218264
 ```
 
-The function takes about `5` seconds, as expected. It is slow, and we want to parallelize it. However, the workload is very uneven, as the `sleep_for` for `i == 1` takes `0.001 s`, and for `i == 100` it takes `0.1 s`. 
+The function takes about `8` seconds. It is slow, and we want to parallelize it. However, the workload is very uneven, as the `work_for` call for `i == 1` takes `0.001 s`, and for `i == 120` it takes `0.12 s`. 
 
-We will now write a parallel version of this sum, using the Julia `Base` `@threads` macro. We have initialized julia with `julia -t 12`, such that 12 threads are available:
+We will now write a parallel version of this sum, using the Julia `Base` `@threads` macro. We have initialized julia with `julia -t 12`, such that 12 threads are available. We will also count the number of tasks executed by each thread, accumulated in the `n` array:
 
 ```julia-repl
-julia> function sum_N_threads(;N=100)
-           tasks = shuffle(1:N)
+julia> using Base.Threads 
+
+julia> function sum_N_threads(;N=120, dt=0.001)
            s = zeros(nthreads())
-           @threads for i in tasks
-               sleep_for(i*0.001)
+           n = zeros(Int, nthreads())
+           @threads for i in 1:N
+               work_for(time=i*dt)
                s[threadid()] += rand()
+               n[threadid()] += 1
            end
-           return sum(s)
+           return sum(s), n
        end
 
 julia> @btime sum_N_threads()
-  767.060 ms (76 allocations: 7.69 KiB)
-52.35711885302541
+  1.422 s (80 allocations: 7.47 KiB)
+(50.43661472139146, [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10])
 ```
 
-We have used `threadid()` here, which is not a recommended pattern, but, anyway, the function is about `7-8` times faster, with 12 threads. Can we do better? 
+The function is about `7-8` times faster, with 12 threads. Note, also, that each thread as responsible for exactly 10 tasks, and this is not optimal given the uneven workload involved.
 
+!!! note
+    We have used `threadid()` here, which is not a recommended pattern, because in 
+    some situations thread migration can cause concurrency problems. In fact, this
+    is main reason for the existence of `ChunkSplitters.jl`, but here we will 
+    discuss the additional gains associated with a finer control of the parallelization.
+    
 Let us try to use `@spawn` instead:
 
 ```julia-repl
-julia> function sum_N_spawn(;N=100)
+julia> function sum_N_spawn(;N=120, dt=0.001)
            s = zeros(nthreads())
+           n = zeros(Int, nthreads())
            @sync for i in 1:N
                @spawn begin
-                   sleep_for(i*0.001)
+                   work_for(time=i*dt)
                    s[threadid()] += rand() 
-               end
-           end
-           return sum(s)
-       end
-
-julia> @btime sum_N_spawn()
-  725.864 ms (626 allocations: 54.36 KiB)
-51.513141160574285
-```
-
-So `@spawn` did a better job, because while `@threads` assigns the workload to each thread in advance, `@spawn` does not, and will use the available threads as they become free. We can see that by counting the number of threads that executed each part of the code:  
-
-```julia-repl
-julia> function sum_N_spawn(;N=100)
-           tasks = shuffle(1:N)
-           s = zeros(nthreads())
-           n = zeros(Int, nthreads())
-           @sync for i in tasks
-               @spawn begin
-                   sleep_for(i*0.001)
-                   s[threadid()] += rand()
-                   n[threadid()] += 1 
-               end
-           end
-           return sum(s), n
-       end
-
-julia> sum_N_spawn()
-(48.60916688417408, [7, 6, 10, 8, 7, 6, 8, 8, 8, 13, 11, 8])
-```
-
-Which shows an uneven distribution of tasks per thread, which is different from what `@threads` does, which we illustrate here by dividing 120 tasks into the 12 available threads:
-
-```julia-repl
-julia> function sum_N_threads(;N=100)
-           tasks = shuffle(1:N)
-           s = zeros(nthreads())
-           n = zeros(Int, nthreads())
-           @threads for i in tasks
-               sleep_for(i*0.001)
-               s[threadid()] += rand()
-               n[threadid()] += 1 
-           end
-           return sum(s), n
-       end
-
-julia> sum_N_threads(N=120)
-(62.52592069759371, [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10])
-```
-
-Therefore, using `@spawn` seems a better choice for uneven workloads. But what happens if too much tasks are spawned? Let us see, by making each cycle faster, but increasing radically the number of tasks:
-
-```julia-repl
-julia> function sum_N_spawn(;N=10^4) # changed here 10^4
-           tasks = shuffle(1:N)
-           s = zeros(nthreads())
-           n = zeros(Int, nthreads())
-           @sync for i in tasks
-               @spawn begin
-                   sleep_for(i*1e-7) # changed here to 1e-7
-                   s[threadid()] += rand()
                    n[threadid()] += 1 
                end
            end
@@ -141,51 +89,49 @@ julia> function sum_N_spawn(;N=10^4) # changed here 10^4
        end
 
 julia> @btime sum_N_spawn()
-  610.315 ms (53903 allocations: 5.34 MiB)
-(4982.465368590981, [820, 847, 806, 841, 829, 813, 873, 839, 842, 857, 820, 813])
+  961.869 ms (628 allocations: 64.86 KiB)
+(62.64823839506871, [11, 11, 9, 9, 10, 9, 12, 10, 10, 10, 8, 11])
 ```
 
-The tasks are still not homogeneous, but there are much more tasks to launch. Let us see how `@threads` behave now:
+So `@spawn` did a better job, because while `@threads` assigns the workload to each thread in advance, `@spawn` does not, and will use the available threads as they become free. 
+
+Nevertheless, `@spawn` has launched a different task for each workload, and that is reflected in the greater number of allocations it involved. We can see this more clearly if the number of tasks is much greater (`N=100*120`, but we reduce `dt` to keep reasonable running times):
+
+With `@threads`:
 
 ```julia-repl
-julia> function sum_N_threads(;N=10^4) # changed here 10^4
-           tasks = shuffle(1:N)
-           s = zeros(nthreads())
-           n = zeros(Int, nthreads())
-           @threads for i in tasks
-               sleep_for(i*1e-7) # changed here to 1e-7
-               s[threadid()] += rand()
-               n[threadid()] += 1 
-               
-           end
-           return sum(s), n
-       end
-
-julia> @btime sum_N_threads()
-  626.183 ms (78 allocations: 85.33 KiB)
-(5016.910999246582, [834, 833, 834, 833, 833, 833, 834, 833, 834, 833, 833, 833])
+julia> @btime sum_N_threads(N=120*10^2, dt=1e-7)
+  1.389 s (75 allocations: 7.31 KiB)
+(5945.862883176399, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000])
 ```
 
-Now the performance difference is much smaller, because the workload unbalance is less important. However, we note that `@threads` allocates much less memory than `@spawn`. 
+and now with `@spawn`: 
+
+```julia-repl
+julia> @btime sum_N_spawn(N=100*120, dt=1e-7)
+  911.976 ms (65901 allocations: 6.45 MiB)
+(6010.25758204897, [996, 942, 1023, 1019, 984, 1027, 989, 995, 989, 1016, 994, 1026])
+```
+
+The `@spawn` strategy still gains in execution time, but we note that the memory allocated by it increased significantly, which can be an issue for the parallelization of large collections. On the other side, `@threads` allocates only a minimal set of auxiliary buffers.
 
 Can we have the best of both worlds?
 
-
 ## Using ChunkSplitters
 
-What `ChunkSplitters` does is to give you the complete control of the chunking of the tasks, independently of the use of `@threads` or `@spawn` as the underlying parallel protocol.
+`ChunkSplitters` provides an additional control over the chunking of the tasks, and can be used with `@threads` or `@spawn` as the underlying parallel protocol.
 
-The function above will be implemented as:
+The function above will be implemented initially with `@threads` as:
 
 ```julia-repl
 julia> using ChunkSplitters
 
-julia> function sum_N_chunks(N=10^5; nchunks=nthreads(), chunk_type=:scatter)
+julia> function sum_N_chunks(;N=120, dt=0.001, nchunks=nthreads(), chunk_type=:batch)
            s = zeros(nchunks)
            n = zeros(Int, nchunks)
-           @sync for (i_range, i_chunk) in chunks(1:N, nchunks, chunk_type)
-               @spawn for i in i_range
-                   sleep_for(i*1e-7)
+           @threads for (i_range, i_chunk) in chunks(1:N, nchunks, chunk_type)
+               for i in i_range
+                   work_for(time=i*dt)
                    s[i_chunk] += rand()
                    n[i_chunk] += 1
                end
@@ -194,24 +140,66 @@ julia> function sum_N_chunks(N=10^5; nchunks=nthreads(), chunk_type=:scatter)
        end
 ```
 
-We can now choose the number of chunks to be processed by each spawned task. A range of indexes of the collection `1:N` will be stored in `i_range` and associated to the chunk `i_chunk`. We get rid, with this of the use of `threadid()`, which is also nice, because thread migration cannot affect our result anymore.
+We can now choose the number of chunks in which the workload is divided (by default `nchunks=nthreads()`), and each chunk will be assigned to one thread. A range of indexes of the collection `1:N` will be stored in `i_range` and associated with the chunk `i_chunk`. We get rid, with this, of the use of `threadid()`, which is nice, because thread migration cannot affect our result anymore.
 
-Since we know that there is a correlation between task cost and index, we use `:scatter` as the chunking strategy, which will distribute the tasks to each thread in an alternating fashion. We get, now:
-
-```julia-repl
-julia> @time sum_N_chunks()
- 67.668140 seconds (80 allocations: 7.453 KiB)
-(49922.78555989177, [8334, 8334, 8334, 8334, 8333, 8333, 8333, 8333, 8333, 8333, 8333, 8333])
-```
-
-Such that we have obtained the same performance of `@spawn`, but allocating `7.5KiB` instead of `58Mb`. But did we miss the advantage of `@spawn` of using empty threads, since the tasks associated to each thread are defined in advance? Not necessarily, because we are not restricted to use `nchunks=nthreads()`. Indeed, we can do, now:
+We initially use the `:batch` chunking type, which will just divide the workload consecutively. This will be similar to what `@threads` does, and since there is a correlation between index and cost of the task, this is not optimal:
 
 ```julia-repl
-julia> @time sum_N_chunks(;nchunks=144)
- 68.080054 seconds (895 allocations: 86.188 KiB)
-(49867.13229871132, [695, 695, 695, 695 …  694, 694, 694, 694])
+julia> @btime sum_N_chunks(N=100*120, dt=1e-7)
+  1.463 s (77 allocations: 7.56 KiB)
+(6035.277380219111, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000])
 ```
 
-Which here has a similar performance (because the `:scatter` splitter already takes care of the unbalanced workload), but still allocated a minimal fraction of what `@spawn` does.
+We have, now the option to create chunks scattered through the workload, and that can be effective to distribute the workload better given the known correlation of index and cost:
 
+```julia-repl
+julia> @btime sum_N_chunks(N=100*120, dt=1e-7, chunk_type=:scatter)
+  898.642 ms (77 allocations: 7.56 KiB)
+(6073.279878329541, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000])
+```
 
+Note that, in this specific case, the `:scatter` chunking is optimal, because it will assign the tasks in an alternating fashion to the threads. Associated with the small allocation cost, the result can be faster than `@spawn`ing the tasks on demand. 
+
+We can also use `@spawn` with `ChunkSplitters`, with:
+
+```julia-repl
+julia> function sum_N_chunks(;N=120, dt=0.001, nchunks=nthreads(), chunk_type=:batch)
+           s = zeros(nchunks)
+           n = zeros(Int, nchunks)
+           @sync for (i_range, i_chunk) in chunks(1:N, nchunks, chunk_type)
+               @spawn for i in i_range
+                   work_for(time=i*dt)
+                   s[i_chunk] += rand()
+                   n[i_chunk] += 1
+               end
+           end
+           return sum(s), n
+       end
+```
+
+Which gives us with the `:batch` chunking mode a suboptimal performance, because the workload is divided by thread in advance:
+
+```julia-repl
+julia> @btime sum_N_chunks(N=100*120, dt=1e-7, chunk_type=:batch)
+  1.457 s (117 allocations: 8.66 KiB)
+(5974.13618602343, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000])
+```
+
+We can, nevertheless, use a different strategy here, which is to increase the number of chunks, thus reducing the individual cost of each task. The number of spawned tasks can now be controlled by the `nchunks` parameter:
+
+```julia-repl
+julia> @btime sum_N_chunks(N=100*120, dt=1e-7, nchunks=144, chunk_type=:batch)
+  907.016 ms (1037 allocations: 88.39 KiB)
+(5993.798439269024, [84, 84, 84, 84, 84, 84, 84, 84, 84, 84  …  83, 83, 83, 83, 83, 83, 83, 83, 83, 83])
+```
+
+Here we are in the middle ground between a simple `@spawn` strategy which launches a different task for each calculation, and a `@thread` strategy which launches `nthreads()` tasks. Yet, note that the memory allocated is much less than with the simple use of `@spawn`. 
+
+We can, of course, use the `:scatter` chunking here as well:
+
+```julia-repl
+julia> @btime sum_N_chunks(N=100*120, dt=1e-7, chunk_type=:scatter)
+  958.821 ms (112 allocations: 8.50 KiB)
+(5981.069201763822, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000])
+```
+which, compared to the `:batch` chunking, is faster, but it does not perform necessarily better in this example than the combination of `:scatter` and `@threads`, because here this choice promotes the ideal load balancing. 

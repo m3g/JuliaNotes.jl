@@ -22,6 +22,7 @@ makedocs(
         "Mutability" => "immutable.md",
         "ERROR: No method..." => "nomethod.md",
         "Vector{Int} <: Vector{Real} is false???" => "typevariance.md",
+        "Parallel load balancing" => "loadbalancing.md",
         "Figures and LaTeX" => "figures.md",
         "Create new package" => "new_package.md",
         "Publish Docs" => "publish_docs.md",
