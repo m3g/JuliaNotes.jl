@@ -42,7 +42,7 @@ The first key, starting with `ssh-rsa ` must be copied as a new "Deploy key` in 
 
 Be careful in allowing `Write permissions`. The second key has to be copied to:
 
-`Settings -> Secrets -> New repository secret` 
+`Settings -> Secrets -> Actions -> New repository secret` 
 
 with the name `DOCUMENTER_KEY`.
 
@@ -52,10 +52,10 @@ Create, in your project, a file
 ```
 /home/user/.julia/dev/Project/.github/workflows/ci.yml
 ```
-with a content similar to [THIS](https://github.com/m3g/JuliaNotes.jl/blob/main/.github/workflows/ci.yml) one.
+with a content similar to [THIS](https://github.com/m3g/CellListMap.jl/blob/main/.github/workflows/ci.yml) one.
 
 Note that you have to change some lines that contain the name of the
-package name (`JuliaNotes` - two substitutions).
+package name (in the example the package is called `CellListMap` - two substitutions are required).
 
 ## Create a release
 
