@@ -72,7 +72,7 @@ true
 Note that isa corresponds to `typeof(x) <: T`, not `typeof(x) == T`. This makes sense because then `1 isa Number`, for example, while `typeof(1) == Number` is `false`, because `Number` is an abstract type.
 
 
-*Strictly speaking, in the Julia language, something like `Vector{<:Real}`  is of the `UnionAll` type, which is something in between between a completely abstract type which only serve as nodes in the type tree, and a concrete type which can actually be instantiated. `UnionAll` types do have information on how they should be instantiated, by that information is not complete.
+*Strictly speaking, in the Julia language, something like `Vector{<:Real}`  is of the `UnionAll` type, which is something in between between a completely abstract type which only serve as nodes in the type tree, and a concrete type which can actually be instantiated. `UnionAll` types do have information on how they should be instantiated, but that information is not complete.
 
 Note: This text was originally posted as a response to [this thread](https://discourse.julialang.org/t/why-isa-x-1-y-1-array-tuple-stuff-number-1-false/55777), and its final form includes contributions from other people, as indicated in the thread.
 
