@@ -4,7 +4,7 @@ This a brief description of some nice development workflows for Julia, particula
 
 ## juliaup
 
-The [juliaup](https://github.com/JuliaLang/juliaup) tool allows an easy handling of Julia installations and versioning. In short, if you are using Linux, install `juliaup` with:
+The [juliaup](https://github.com/JuliaLang/juliaup) tool is an alternative to official download and allows an easy handling of Julia installations, updates and versioning. On Windows, `juliaup` is available from Windows Store. On Linux or Mac, install `juliaup` with:
 ```bash
 curl -fsSL https://install.julialang.org | sh
 ```
