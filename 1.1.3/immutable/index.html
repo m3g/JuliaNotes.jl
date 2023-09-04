@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Mutability · JuliaNotes.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="JuliaNotes.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">JuliaNotes.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../fastrepl/">Cool and fast REPL</a></li><li><a class="tocitem" href="../workflow/">Development workflow</a></li><li><a class="tocitem" href="../modules/">Modules and Revise</a></li><li><a class="tocitem" href="../loopscopes/">Scope of loops</a></li><li><a class="tocitem" href="../benchmark/">Benchmark</a></li><li><a class="tocitem" href="../assignment/">Assignment and mutation</a></li><li><a class="tocitem" href="../instability/">Type instability</a></li><li><a class="tocitem" href="../anonymous/">Anonymous functions</a></li><li><a class="tocitem" href="../memory/">Tracking allocations</a></li><li class="is-active"><a class="tocitem" href>Mutability</a><ul class="internal"><li><a class="tocitem" href="#Immutability-and-mutability"><span>Immutability and mutability</span></a></li><li><a class="tocitem" href="#Heap-and-Stack-memory"><span>Heap and Stack memory</span></a></li><li><a class="tocitem" href="#Relation-to-mutability-and-immutability"><span>Relation to mutability and immutability</span></a></li><li><a class="tocitem" href="#Static-arrays"><span>Static arrays</span></a></li><li><a class="tocitem" href="#Immutable-structs"><span>Immutable structs</span></a></li></ul></li><li><a class="tocitem" href="../nomethod/">ERROR: No method...</a></li><li><a class="tocitem" href="../typevariance/">Vector{Int} &lt;: Vector{Real} is false???</a></li><li><a class="tocitem" href="../figures/">Figures and LaTeX</a></li><li><a class="tocitem" href="../new_package/">Create new package</a></li><li><a class="tocitem" href="../publish_docs/">Publish Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Mutability</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Mutability</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/m3g/JuliaNotes.jl/blob/main/docs/src/immutable.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Immutable-and-mutable-variables"><a class="docs-heading-anchor" href="#Immutable-and-mutable-variables">Immutable and mutable variables</a><a id="Immutable-and-mutable-variables-1"></a><a class="docs-heading-anchor-permalink" href="#Immutable-and-mutable-variables" title="Permalink"></a></h1><h2 id="Immutability-and-mutability"><a class="docs-heading-anchor" href="#Immutability-and-mutability">Immutability and mutability</a><a id="Immutability-and-mutability-1"></a><a class="docs-heading-anchor-permalink" href="#Immutability-and-mutability" title="Permalink"></a></h2><p>In Julia there are mutable and immutable values (variables), and this distinction and implications are not always obvious depending on one&#39;s previous programming experience. </p><p>For instance, having past experience with Fortran, this distinction was a novelty for me. In Fortran one declares every variable, and at the moment of declaring one has the impresion of having reserved a place in the memory for that variable, even with scalar one does that. Along the Fortran code, when a different value is assigned to the label assigned to the variable, the value changes, and that can be quite simply interpreted as if the value stored in the memory position which was reserved for that variable changed. </p><p>From a Fortran user perspective, this result, for example, is quite astonishing:</p><pre><code class="language-julia-repl hljs">julia&gt; function add_one(x)
+           x = x + 1
+           return x
+       end;
+
+julia&gt; x = 1
+1
+
+julia&gt; add_one(x)
+2
+
+julia&gt; x
+1</code></pre><p>That codes appears to be mutating the value associated to the variable <code>x</code> but, nevertheless, the value of <code>x</code> is the outer scope does not change. </p><p>In Julia (and many other higher-level languages, in particular), one has to understand the difference between mutable and imutable values. The reason, from a user perspective, derives from many features of high level languages. For instance, consider the code:</p><pre><code class="language-julia-repl hljs">julia&gt; x = 1
+1
+
+julia&gt; x = [1, 2]
+2-element Vector{Int64}:
+ 1
+ 2</code></pre><p>In a statically typed language, <code>x</code> would assume the value of an <code>Int</code> in the first assignment, and one would not be able to assign that label, <code>x</code>, to a different type of value, a vector of integers, in this case. The flexibility of a dynamic language requires <strong>labels</strong>, like <code>x</code> here, be only that, labels assigned to values. Then, one has to understand the properties of the values, in this case either the integer number <code>1</code> or the vector <code>[1,2]</code>. </p><p>The number <code>1</code> is an immutable value. That is, we cannot convert it into something else. In some sense that&#39;s natural. What is less natural, then, a sequence of code like this:</p><pre><code class="language-julia hljs">x = 1
+x = 2</code></pre><p>does not mean mutating the variable <code>x</code>, but simply assigning the label <code>x</code> to a different immutable value. </p><p>The implications of this are important, as was shown in the <code>add_one</code> function above. From the structure of the function, one would be tempted to interpret that <code>x</code> was mutated inside it, and thus that the value of <code>x</code> after the application of the function would have changed. It does not, though, and this can be confusing. In this case, the point is that what was passed to the function was the <em>value</em> <code>1</code>, an immutable value, and within <code>add_one</code> initially the label <code>x</code> was assigned to it. </p><p>Next, in the line </p><pre><code class="language-julia hljs">x = x + 1</code></pre><p>the label <code>x</code> was reassigned, to the result of the value of the input <code>x</code> (<code>1</code>), plus one, and the <em>value</em> <code>2</code> was returned. The label <code>x</code> of the outer scope was simply unchanged, and continued to be assigned to the value <code>1</code>. </p><p>If we wanted to assign the label <code>x</code> of the outer scope of the function to the output of <code>add_one</code>, we would need to do that explicitly:</p><pre><code class="language-julia hljs">x = add_one(x)</code></pre><p>Those considerations become initially more confusing when one sees the following code snippet:</p><pre><code class="language-julia-repl hljs">julia&gt; function add_one(x::Vector{Int})
+           x[1] = x[1] + 1 
+           return x
+       end;
+
+julia&gt; x = [1,2]
+2-element Vector{Int64}:
+ 1
+ 2
+
+julia&gt; add_one(x)
+2-element Vector{Int64}:
+ 2
+ 2
+
+julia&gt; x
+2-element Vector{Int64}:
+ 2
+ 2</code></pre><p>The most fundamental difference here is that <code>x</code>, as a <code>Vector{Int}</code>, that is, a vector of integers. That vector is <em>mutable</em>. That has an implication on how it is generally stored in the memory: it has an address. What is passed to the function is the address of the vector in memory. Inside <code>add_one</code> the vector is mutated, and the array is returned, meaning that its address in memory is returned. One can effectivelly assign a new label to the returned value:</p><pre><code class="language-julia-repl hljs">julia&gt; x = [1,2];
+
+julia&gt; y = add_one(x);
+
+julia&gt; y
+2-element Vector{Int64}:
+ 2
+ 2
+
+julia&gt; x
+2-element Vector{Int64}:
+ 2
+ 2
+
+julia&gt; y === x
+true</code></pre><p>And the last line, comparing <code>y</code> and <code>x</code> with <code>===</code> confirms that these two labels are assigned to the exact same object.</p><h2 id="Heap-and-Stack-memory"><a class="docs-heading-anchor" href="#Heap-and-Stack-memory">Heap and Stack memory</a><a id="Heap-and-Stack-memory-1"></a><a class="docs-heading-anchor-permalink" href="#Heap-and-Stack-memory" title="Permalink"></a></h2><p>The distinction between mutable and mutable objects have important distinctions when it comes to performance. These distinctions are associated to the assumptions that the compiler can make about the behavior of these variables and, thus, about how they can be stored in the memory.</p><p>In particular, there are two major ways in which values (numbers, objects, arrays), can be stored in memory: in the <em>heap</em> or in the <em>stack</em>. Very roughly, the <em>heap</em> is the most flexible form of storing objects, and probably the one that maps more clearly into our naive intuitions about how memory works. In the <em>heap</em> the objects have addresses, which point to the actual positions in the memory where the objects are located. For example, </p><pre><code class="language-julia hljs">x = [1,2]</code></pre><p>is an array with that (normally) has an address in the <em>heap</em> memory, pointing to where the array starts. When we mutate one element of this array, we explicitly change the bit content at the physical memory position where the array is stored. This is fine, but it is <strong>slow</strong>, there are too many indirections in this process.</p><p>In the <em>stack</em> memory, the objects, and values, have a more loose sense. The stack, although physically the same, is a bunch of continuous memory reserved to be used by a program in an efficient manner. In particular, Fortran codes that do not use manual memory allocation will reserve all the memory required for the code in the <em>stack</em>. A continuous block of memory is reserved, and thus the accesses to the memory is fast, except that it brings some limitations in the use of the available computer memory (<em>stack overflow</em> errors are pretty common in old Fortran code).</p><p>The stack memory can be used very efficiently, in particular because the processor can directly access the values without the indirection associated to the address of those values. A function can write data to the <em>stack</em> memory quickly, at the end of the last used position (piling the data), use the memory, and finally just release the memory by informing the system the limits of that memory block used. In summary, this is fast, and as much as possible one would want that the <em>stack</em> model of memory is used for critical operations instead of heap memory. </p><h2 id="Relation-to-mutability-and-immutability"><a class="docs-heading-anchor" href="#Relation-to-mutability-and-immutability">Relation to mutability and immutability</a><a id="Relation-to-mutability-and-immutability-1"></a><a class="docs-heading-anchor-permalink" href="#Relation-to-mutability-and-immutability" title="Permalink"></a></h2><p>This properties of memory management become somewhat linked to the mutability and immutability of variables in Julia. This is not a strict relation (as we will see), but it is rule of thumb that is important in the design of fast Julia code: </p><ul><li>In general, new <em>mutable</em> values are stored in the <em>heap</em>, and new <em>immutable</em> values are stored in the <em>stack</em>. </li></ul><p>One reason for this behavior is that mutable values, in particular most arrays, can change in size. If they can change in size, significant memory rearrangements cannot be ruled out by the compiler, and thus the array storage starts with an address (a pointer), which can be adjusted if the content of the array has to be moved from one physical position in the memory to another position. For that the program has to request a memory space to the system, which takes time. This is all <em>heap</em>  memory flexibility in action.</p><p>On the other side, immutable values have a fixed memory size, and thus the compiler can reserve a block of memory for the value in the <em>stack</em>, use it, and release it when the lifetime of the object is over. Still more flexibility and optimizations are possible since the specific reserved block can be discarded in favor of a new <em>stack</em> allocation if that turns out to be the most efficient strategy for the specific set of operations in hand. </p><p>For example, in our <code>add_one</code> function, slightly modified here for clarifying the argument:</p><pre><code class="language-julia hljs">function add_one(x::Int)
+    y = x + 1
+    return y
+end</code></pre><p>there are two values involved. The immutable input value of <code>x</code>, and the also immutable value of <code>y</code> resulting from adding one to the input value.</p><p>Naively, one would could think that <code>y</code> requires a new position in memory, with a new address. Yet, this value of known bit size can be stored in the <em>stack</em> (in such a simple example the memory used can be even a processor cache, which is even faster), making the operation must faster than if we explicitly required a new memory place with an address bound. We can emulate requiring a new memory address for the <code>y</code> value with this code:</p><pre><code class="language-julia hljs">function add_one_allocate(x)
+    y = [ x + 1 ]
+    return y
+end</code></pre><p>In this example, <code>y</code> will be returned as a <code>Vector{Int}</code>, with a single element equal to <code>x + 1</code>. Let us see how these functions perform:</p><pre><code class="language-julia-repl hljs">julia&gt; @btime add_one(1)
+  0.880 ns (0 allocations: 0 bytes)
+2
+
+julia&gt; @btime add_one_allocate(1)
+  15.060 ns (1 allocation: 64 bytes)
+1-element Vector{Int64}:
+ 2</code></pre><p>Not only creating <code>y</code> in the second case &quot;counts&quot; as an allocation (because it is a <em>heap</em> allocation), but the code is much, much slower. This is &quot;correct&quot;, and necessary here, since the compiler cannot know if <code>y</code> will be resized thereafter, such that it has to create a <em>heap</em> address to the object and request system memory for that. It cannot guarantee that <code>y</code> will fit the <em>stack</em>, which it can for immutable value resulting from the first function.  </p><p>Thus, it is a general rule-of-thumb that working with immutable values is faster than with mutable ones, particularly in what concerns creating those values in intermediate computation states, where the values can be eventually discarded.</p><h2 id="Static-arrays"><a class="docs-heading-anchor" href="#Static-arrays">Static arrays</a><a id="Static-arrays-1"></a><a class="docs-heading-anchor-permalink" href="#Static-arrays" title="Permalink"></a></h2><p>The main property of immutable values is their fixed size. Thus, it is possible to perform fast computations with arrays if they are also fixed in size. The <code>StaticArrays</code> package brings this feature to Julia.</p><p>In many senses, a static array is no different from any other specific type of number, <code>Int</code>, <code>Float64</code>, for examples. Its representation in memory is a continuous block of memory of fixed size, except that it may contain more &quot;numbers&quot; (or other values). </p><p>Static arrays allow programming patterns like this:</p><pre><code class="language-julia-repl hljs">julia&gt; function f()
+           s = 0.
+           for i in 1:1000
+               x = SVector{3,Float64}(i, sqrt(i), i^2)
+               for j in 1:3
+                   s = s + x[j]
+               end
+           end
+           s
+       end;
+
+julia&gt; @btime f()
+  2.601 μs (0 allocations: 0 bytes)
+3.343550974558874e8</code></pre><p>Wait, that function that generates 1000 vectors of dimension 3 does not <em>allocate</em> anything? Yet it doesn&#39;t, because these static arrays have fixed size, so they only exist in the fast memory positions which are temporary. Knowing this allows a bunch of code optimizations which are very cool, and a very pretty syntax if you are dealing with particle simulations. For instance, you can do:</p><pre><code class="language-julia-repl hljs">julia&gt; x = [ SVector{3,Float64}(1,1,1) for i in 1:3 ]; # positions of 3 particles
+
+julia&gt; function update_positions!(x)
+           for i in eachindex(x)
+               y = 2*x[i] # whatever needed
+               x[i] = y 
+           end
+       end;
+
+julia&gt; update_positions!(x)
+
+julia&gt; x
+10-element Array{SArray{Tuple{3},Float64,1,3},1}:
+ [2.0, 2.0, 2.0]
+ [2.0, 2.0, 2.0]
+ [2.0, 2.0, 2.0]
+
+julia&gt; @allocated update_positions!(x)
+0</code></pre><p>Thus, even if we need to create temporary intermediate arrays, this can be done quickly, without <em>heap</em> allocations, and with a syntax that resembles the arithmetics of vectors very naturally. As an additional advantage, the function above functions just as well if the input <code>x</code> array is an array of scalars or static vectors of any other dimension. </p><p>Since it is the fixed size that allows these optimizations, can&#39;t we have <em>mutable</em> arrays, with fixed size, that get also stack-allocated? In fact, we can, whenever the compiler can prove that no <em>heap</em> memory operation is required in the lifetime of the objects. Indeed, the <code>StaticArrays</code> package implements <em>mutable</em> arrays with static size, the <code>MVector</code>s, which can be used, for example, with this pattern:</p><pre><code class="language-julia-repl hljs">julia&gt; function update_positions!(x)
+           for i in eachindex(x)
+               y = MVector(x[i])
+               y[1] = 2.0
+               x[i] = SVector(y)
+           end
+       end;
+
+julia&gt; x = [ SVector{3,Float64}(1,1,1) for i in 1:3 ]; # positions of 3 particles
+
+julia&gt; update_positions!(x)
+
+julia&gt; x
+3-element Vector{SVector{3, Float64}}:
+ [2.0, 1.0, 1.0]
+ [2.0, 1.0, 1.0]
+ [2.0, 1.0, 1.0]
+
+julia&gt; @btime update_positions!($x)
+  2.628 ns (0 allocations: 0 bytes)</code></pre><p>What we did there is to copy the static arrays of <code>x</code> into a mutable static array of fixed size <code>y</code>, in <code>y = MVector(x[i])</code>. Next, we mutated the first component of <code>y</code>, and finally updated the value of <code>x[i]</code> with the mutated array, converted back to a static vector. The compiler could prove, there, that none of the mutable values <em>escaped</em> the scope of the function, and could optimize the code such that only <em>stack</em> memory used. This resulted in fast and non-allocating code.</p><p>The possibilities to improve the performance of a numerical code increase.</p><h2 id="Immutable-structs"><a class="docs-heading-anchor" href="#Immutable-structs">Immutable structs</a><a id="Immutable-structs-1"></a><a class="docs-heading-anchor-permalink" href="#Immutable-structs" title="Permalink"></a></h2><p>There is nothing mysterious about StaticArrays. They are just convenient immutable structures, which you could have defined yourself, with the same allocation results:</p><pre><code class="language-julia-repl hljs">julia&gt; struct P
+           x::Float64
+           y::Float64
+           z::Float64
+       end
+
+julia&gt; function update_positions!(x)
+           for i in eachindex(x)
+               y = P( 2*x[i].x, 2*x[i].y, 2*x[i].z )
+               x[i] = y   
+           end
+       end;
+
+julia&gt; x = [ P(1.0,1.0,1.0) for i in 1:100 ];
+
+julia&gt; update_positions!(x);
+
+julia&gt; @allocated update_positions!(x)
+0</code></pre><p>Further information: <a href="https://discourse.julialang.org/t/julias-assignment-behavior-differs-from-fortran/50389/49?u=leandromartinez98">Fortran compilers</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../memory/">« Tracking allocations</a><a class="docs-footer-nextpage" href="../nomethod/">ERROR: No method... »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Monday 4 September 2023 11:31">Monday 4 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
