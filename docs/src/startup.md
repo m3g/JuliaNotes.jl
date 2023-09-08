@@ -2,7 +2,7 @@
 
 This is my current (as of September 2023) `.julia/config/startup.jl` file:
 
-```
+```julia
 using Revise, BenchmarkTools
 import OhMyREPL
 import Pkg
