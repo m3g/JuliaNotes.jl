@@ -6,7 +6,7 @@ really fast, and with a nice setup for `OhMyREPL`. Install the packages first:
 ```julia
 julia> import Pkg
 
-julia> Pkg.add("Revise", "OhMyREPL", "Crayons", "BenchmarkTools")
+julia> Pkg.add(["Revise", "OhMyREPL", "Crayons", "BenchmarkTools"])
 ```
 
 And add the following to the `~/.julia/config/startup.jl`:
