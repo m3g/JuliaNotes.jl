@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>A note on parallel load balancing · JuliaNotes.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="JuliaNotes.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">JuliaNotes.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../startup/">REPL tips at startup.jl</a></li><li><a class="tocitem" href="../workflow/">Development workflow</a></li><li><a class="tocitem" href="../modules/">Modules and Revise</a></li><li><a class="tocitem" href="../loopscopes/">Scope of loops</a></li><li><a class="tocitem" href="../benchmark/">Benchmark</a></li><li><a class="tocitem" href="../assignment/">Assignment and mutation</a></li><li><a class="tocitem" href="../instability/">Type instability</a></li><li><a class="tocitem" href="../anonymous/">Anonymous functions</a></li><li><a class="tocitem" href="../memory/">Tracking allocations</a></li><li><a class="tocitem" href="../immutable/">Mutability</a></li><li><a class="tocitem" href="../nomethod/">ERROR: No method...</a></li><li><a class="tocitem" href="../typevariance/">Vector{Int} &lt;: Vector{Real} is false???</a></li><li><a class="tocitem" href="../figures/">Figures and LaTeX</a></li><li><a class="tocitem" href="../new_package/">Create new package</a></li><li><a class="tocitem" href="../publish_docs/">Publish Docs</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>A note on parallel load balancing</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>A note on parallel load balancing</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/m3g/JuliaNotes.jl/blob/main/docs/src/loadbalancing.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="A-note-on-parallel-load-balancing"><a class="docs-heading-anchor" href="#A-note-on-parallel-load-balancing">A note on parallel load balancing</a><a id="A-note-on-parallel-load-balancing-1"></a><a class="docs-heading-anchor-permalink" href="#A-note-on-parallel-load-balancing" title="Permalink"></a></h1><p>When running a parallel calculation, it is a good idea to divide the workload into chunks of known size. We have developed a simple package, <a href="https://github.com/m3g/ChunkSplitters.jl"><code>ChunkSplitters.jl</code></a> to perform such splitting. Here we make some considerations on why it should be used and how to cope with highly uneven parallel workloads. </p><h2 id="Using-@threads-and-@spawn"><a class="docs-heading-anchor" href="#Using-@threads-and-@spawn">Using @threads and @spawn</a><a id="Using-@threads-and-@spawn-1"></a><a class="docs-heading-anchor-permalink" href="#Using-@threads-and-@spawn" title="Permalink"></a></h2><p>To simulate a highly uneven workload, first we create a function that occupies a processor for a known amount of time given an input. Like a <code>sleep</code> function, but that actually does some work and doesn&#39;t let the processor free:</p><pre><code class="language-julia-repl hljs">julia&gt; function work_for(;time=1, cycles_for_one_second=4*10^7)
+           x = 0.0
+           for i in 1:time*cycles_for_one_second
+               x += abs(sin(log(i)))
+           end
+           return x
+       end
+
+julia&gt; @time work_for(time=0.5)
+  0.507590 seconds
+1.1355518913947988e7</code></pre><p>with that number of cycles the function takes roughly 1 second in my laptop if <code>time == 1</code>. By changing the input <code>time</code> we can now create very uneven workloads in a parallel run.</p><p>For example, let us sum <code>N = 120</code> random numbers but introducing the call to <code>work_for</code> at each iteration, with a time proportional to the index of the iteration (<code>time = i*dt</code>):</p><pre><code class="language-julia-repl hljs">julia&gt; using BenchmarkTools 
+
+julia&gt; function sum_N(;N=120, dt=0.001)
+           s = 0
+           for i in 1:N
+               work_for(time=i*dt)
+               s += rand()
+           end
+           return s
+       end
+
+julia&gt; @btime sum_N()
+  8.144 s (0 allocations: 0 bytes)
+68.66902947218264</code></pre><p>The function takes about <code>8</code> seconds. It is slow, and we want to parallelize it. However, the workload is very uneven, as the <code>work_for</code> call for <code>i == 1</code> takes <code>0.001 s</code>, and for <code>i == 120</code> it takes <code>0.12 s</code>. </p><p>We will now write a parallel version of this sum, using the Julia <code>Base</code> <code>@threads</code> macro. We have initialized julia with <code>julia -t 12</code>, such that 12 threads are available. We will also count the number of tasks executed by each thread, accumulated in the <code>n</code> array:</p><pre><code class="language-julia-repl hljs">julia&gt; using Base.Threads 
+
+julia&gt; function sum_N_threads(;N=120, dt=0.001)
+           s = zeros(nthreads())
+           n = zeros(Int, nthreads())
+           @threads for i in 1:N
+               work_for(time=i*dt)
+               s[threadid()] += rand()
+               n[threadid()] += 1
+           end
+           return sum(s), n
+       end
+
+julia&gt; @btime sum_N_threads()
+  1.422 s (80 allocations: 7.47 KiB)
+(50.43661472139146, [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10])</code></pre><p>The function is about <code>7-8</code> times faster, with 12 threads. Note, also, that each thread as responsible for exactly 10 tasks, and this is not optimal given the uneven workload involved.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>We have used <code>threadid()</code> here, which is not a recommended pattern, because in  some situations thread migration can cause concurrency problems. In fact, this is main reason for the existence of <code>ChunkSplitters.jl</code>, but here we will  discuss the additional gains associated with a finer control of the parallelization.</p></div></div><p>Let us try to use <code>@spawn</code> instead:</p><pre><code class="language-julia-repl hljs">julia&gt; function sum_N_spawn(;N=120, dt=0.001)
+           s = zeros(nthreads())
+           n = zeros(Int, nthreads())
+           @sync for i in 1:N
+               @spawn begin
+                   work_for(time=i*dt)
+                   s[threadid()] += rand() 
+                   n[threadid()] += 1 
+               end
+           end
+           return sum(s), n
+       end
+
+julia&gt; @btime sum_N_spawn()
+  961.869 ms (628 allocations: 64.86 KiB)
+(62.64823839506871, [11, 11, 9, 9, 10, 9, 12, 10, 10, 10, 8, 11])</code></pre><p>So <code>@spawn</code> did a better job, because while <code>@threads</code> assigns the workload to each thread in advance, <code>@spawn</code> does not, and will use the available threads as they become free. </p><p>Nevertheless, <code>@spawn</code> has launched a different task for each workload, and that is reflected in the greater number of allocations it involved. We can see this more clearly if the number of tasks is much greater (<code>N=100*120</code>, but we reduce <code>dt</code> to keep reasonable running times):</p><p>With <code>@threads</code>:</p><pre><code class="language-julia-repl hljs">julia&gt; @btime sum_N_threads(N=120*10^2, dt=1e-7)
+  1.389 s (75 allocations: 7.31 KiB)
+(5945.862883176399, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000])</code></pre><p>and now with <code>@spawn</code>: </p><pre><code class="language-julia-repl hljs">julia&gt; @btime sum_N_spawn(N=100*120, dt=1e-7)
+  911.976 ms (65901 allocations: 6.45 MiB)
+(6010.25758204897, [996, 942, 1023, 1019, 984, 1027, 989, 995, 989, 1016, 994, 1026])</code></pre><p>The <code>@spawn</code> strategy still gains in execution time, but we note that the memory allocated by it increased significantly, which can be an issue for the parallelization of large collections. On the other side, <code>@threads</code> allocates only a minimal set of auxiliary buffers.</p><p>Can we have the best of both worlds?</p><h2 id="Using-ChunkSplitters"><a class="docs-heading-anchor" href="#Using-ChunkSplitters">Using ChunkSplitters</a><a id="Using-ChunkSplitters-1"></a><a class="docs-heading-anchor-permalink" href="#Using-ChunkSplitters" title="Permalink"></a></h2><p><code>ChunkSplitters</code> provides an additional control over the chunking of the tasks, and can be used with <code>@threads</code> or <code>@spawn</code> as the underlying parallel protocol.</p><p>The function above will be implemented initially with <code>@threads</code> as:</p><pre><code class="language-julia-repl hljs">julia&gt; using ChunkSplitters
+
+julia&gt; function sum_N_chunks(;N=120, dt=0.001, nchunks=nthreads(), chunk_type=:batch)
+           s = zeros(nchunks)
+           n = zeros(Int, nchunks)
+           @threads for (i_range, i_chunk) in chunks(1:N, nchunks, chunk_type)
+               for i in i_range
+                   work_for(time=i*dt)
+                   s[i_chunk] += rand()
+                   n[i_chunk] += 1
+               end
+           end
+           return sum(s), n
+       end</code></pre><p>We can now choose the number of chunks in which the workload is divided (by default <code>nchunks=nthreads()</code>), and each chunk will be assigned to one thread. A range of indexes of the collection <code>1:N</code> will be stored in <code>i_range</code> and associated with the chunk <code>i_chunk</code>. We get rid, with this, of the use of <code>threadid()</code>, which is nice, because thread migration cannot affect our result anymore.</p><p>We initially use the <code>:batch</code> chunking type, which will just divide the workload consecutively. This will be similar to what <code>@threads</code> does, and since there is a correlation between index and cost of the task, this is not optimal:</p><pre><code class="language-julia-repl hljs">julia&gt; @btime sum_N_chunks(N=100*120, dt=1e-7)
+  1.463 s (77 allocations: 7.56 KiB)
+(6035.277380219111, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000])</code></pre><p>We have, now the option to create chunks scattered through the workload, and that can be effective to distribute the workload better given the known correlation of index and cost:</p><pre><code class="language-julia-repl hljs">julia&gt; @btime sum_N_chunks(N=100*120, dt=1e-7, chunk_type=:scatter)
+  898.642 ms (77 allocations: 7.56 KiB)
+(6073.279878329541, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000])</code></pre><p>Note that, in this specific case, the <code>:scatter</code> chunking is optimal, because it will assign the tasks in an alternating fashion to the threads. Associated with the small allocation cost, the result can be faster than <code>@spawn</code>ing the tasks on demand. </p><p>We can also use <code>@spawn</code> with <code>ChunkSplitters</code>, with:</p><pre><code class="language-julia-repl hljs">julia&gt; function sum_N_chunks(;N=120, dt=0.001, nchunks=nthreads(), chunk_type=:batch)
+           s = zeros(nchunks)
+           n = zeros(Int, nchunks)
+           @sync for (i_range, i_chunk) in chunks(1:N, nchunks, chunk_type)
+               @spawn for i in i_range
+                   work_for(time=i*dt)
+                   s[i_chunk] += rand()
+                   n[i_chunk] += 1
+               end
+           end
+           return sum(s), n
+       end</code></pre><p>Which gives us with the <code>:batch</code> chunking mode a suboptimal performance, because the workload is divided by thread in advance:</p><pre><code class="language-julia-repl hljs">julia&gt; @btime sum_N_chunks(N=100*120, dt=1e-7, chunk_type=:batch)
+  1.457 s (117 allocations: 8.66 KiB)
+(5974.13618602343, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000])</code></pre><p>We can, nevertheless, use a different strategy here, which is to increase the number of chunks, thus reducing the individual cost of each task. The number of spawned tasks can now be controlled by the <code>nchunks</code> parameter:</p><pre><code class="language-julia-repl hljs">julia&gt; @btime sum_N_chunks(N=100*120, dt=1e-7, nchunks=144, chunk_type=:batch)
+  907.016 ms (1037 allocations: 88.39 KiB)
+(5993.798439269024, [84, 84, 84, 84, 84, 84, 84, 84, 84, 84  …  83, 83, 83, 83, 83, 83, 83, 83, 83, 83])</code></pre><p>Here we are in the middle ground between a simple <code>@spawn</code> strategy which launches a different task for each calculation, and a <code>@thread</code> strategy which launches <code>nthreads()</code> tasks. Yet, note that the memory allocated is much less than with the simple use of <code>@spawn</code>. </p><p>We can, of course, use the <code>:scatter</code> chunking here as well:</p><pre><code class="language-julia-repl hljs">julia&gt; @btime sum_N_chunks(N=100*120, dt=1e-7, chunk_type=:scatter)
+  958.821 ms (112 allocations: 8.50 KiB)
+(5981.069201763822, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000])</code></pre><p>which, compared to the <code>:batch</code> chunking, is faster, but it does not perform necessarily better in this example than the combination of <code>:scatter</code> and <code>@threads</code>, because here this choice promotes the ideal load balancing. </p></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Friday 8 September 2023 17:43">Friday 8 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
