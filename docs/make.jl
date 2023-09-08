@@ -9,7 +9,7 @@ makedocs(
     sitename="JuliaNotes.jl",
     pages = [
         "Home" => "index.md",
-        "Cool and fast REPL" => "fastrepl.md",
+        "REPL tips at startup.jl" => "startup.md",
         "Development workflow" => "workflow.md",
         "Modules and Revise" => "modules.md",
         "Scope of loops" => "loopscopes.md",
