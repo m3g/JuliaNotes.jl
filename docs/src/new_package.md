@@ -12,7 +12,7 @@ https://github.com/lmiq/MyPackage.jl
 
 ```julia
 using PkgTemplates
-tpl = Template(user="lmiq")
+tpl = Template(user="lmiq", julia=v"1.9", plugins=[Git(ssh=true)])
 tpl("MyPackage")
 ```
 
