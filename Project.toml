@@ -1,7 +1,7 @@
 name = "JuliaNotes"
 uuid = "bb23d089-5b45-4deb-921c-94082d129500"
 authors = ["Leandro Martinez <leandro@iqm.unicamp.br> and contributors"]
-version = "1.1.6"
+version = "1.1.7"
 
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
