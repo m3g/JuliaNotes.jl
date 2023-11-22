@@ -17,6 +17,7 @@ makedocs(
         "Assignment and mutation" => "assignment.md",
         "Type instability" => "instability.md",
         "Anonymous functions" => "anonymous.md",
+        "Simple yet performant" => "simple.md",
         #"Union splitting" => "splitting.md",
         "Tracking allocations" => "memory.md",
         "Mutability" => "immutable.md",
