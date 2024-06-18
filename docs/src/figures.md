@@ -38,7 +38,7 @@ The use of `\textrm` or `\mathrm`, which should provide the same results, must b
 
 ## Font, margin, and figure size
 
-The font and figure sizes can be tunned using some parameters, for instance, `scalefontsizes`:
+The font and figure sizes can be tuned using some parameters, for instance, `scalefontsizes`:
 
 ```julia
 scalefontsizes(1.3)
