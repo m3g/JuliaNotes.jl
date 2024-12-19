@@ -103,7 +103,7 @@ And the last line, comparing `y` and `x` with `===` confirms that these two labe
 
 ## Heap and Stack memory
 
-The distinction between mutable and mutable objects have important distinctions when it comes to performance. These distinctions are associated to the assumptions that the compiler can make about the behavior of these variables and, thus, about how they can be stored in the memory.
+The distinction between mutable and immutable objects have important distinctions when it comes to performance. These distinctions are associated to the assumptions that the compiler can make about the behavior of these variables and, thus, about how they can be stored in the memory.
 
 In particular, there are two major ways in which values (numbers, objects, arrays), can be stored in memory: in the *heap* or in the *stack*. Very roughly, the *heap* is the most flexible form of storing objects, and probably the one that maps more clearly into our naive intuitions about how memory works. In the *heap* the objects have addresses, which point to the actual positions in the memory where the objects are located. For example, 
 ```julia
